@@ -2,14 +2,187 @@
 # Copyright 2026 Google LLC
 
 import os
+import json
+import numpy as np
 import pandas as pd
+from datetime import datetime
 from google.adk.agents import Agent
 from google.adk.apps import App
 from google.adk.models import Gemini
 from google.genai import types
 
+# Machine Learning imports for Clinical Explainer
+from sklearn.model_selection import train_test_split, StratifiedKFold
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+from sklearn.inspection import permutation_importance
+from sklearn.metrics import classification_report, accuracy_score, recall_score
+try:
+    from xgboost import XGBClassifier
+except ImportError:
+    XGBClassifier = None
+
 # Use the API key from environment variables
 api_key = os.environ.get("GEMINI_API_KEY")
+base_data_path = "./data"
+
+# Global Variables for pre-trained model and scaler
+_GLOBAL_MODEL = None
+_GLOBAL_SCALER = None
+_GLOBAL_FEATURES = None
+
+def _initialize_clinical_model():
+    """Trains the SVM dynamically on initialization to provide real decision distances."""
+    global _GLOBAL_MODEL, _GLOBAL_SCALER, _GLOBAL_FEATURES
+    
+    if _GLOBAL_MODEL is not None:
+        return
+        
+    full_path = os.path.join(base_data_path, "parkinsons.data")
+    if not os.path.exists(full_path):
+        print("Warning: parkinsons.data not found. Clinical model will not be initialized.")
+        return
+        
+    try:
+        df = pd.read_csv(full_path, engine='python')
+        if 'name' in df.columns:
+            df = df.drop(columns=['name'])
+        
+        X = df.drop(columns=['status'])
+        y = df['status']
+        _GLOBAL_FEATURES = list(X.columns)
+        
+        _GLOBAL_SCALER = StandardScaler()
+        X_scaled = _GLOBAL_SCALER.fit_transform(X)
+        
+        # Train SVM with probability support
+        _GLOBAL_MODEL = SVC(kernel='rbf', probability=True, random_state=42)
+        _GLOBAL_MODEL.fit(X_scaled, y)
+    except Exception as e:
+        print(f"Error initializing clinical model: {e}")
+
+# Initialize model at module load
+_initialize_clinical_model()
+
+
+def validate_vocal_features(features: dict) -> str:
+    """Validates raw vocal feature arrays to prevent model crashes and flag anomalies.
+    
+    Args:
+        features: A dictionary containing vocal metric names as keys and their numeric values.
+    """
+    if not isinstance(features, dict):
+        return "Error: Features must be provided as a dictionary."
+        
+    warnings = []
+    
+    if 'MDVP:Fo(Hz)' in features:
+        fo = features['MDVP:Fo(Hz)']
+        if not (50.0 <= fo <= 400.0):
+            warnings.append(f"CRITICAL ANOMALY: MDVP:Fo(Hz) value ({fo}) falls outside the physically possible human vocal boundary (50Hz - 400Hz).")
+            
+    for key, val in features.items():
+        if ('Jitter' in key or 'Shimmer' in key or key == 'PPE') and val < 0:
+             warnings.append(f"DATA ERROR: {key} must be a positive value, got {val}.")
+             
+    if warnings:
+        return "Feature Validation Failed:\n" + "\n".join(warnings)
+    
+    return "Feature Validation Passed: All parameters fall within acceptable physiological bounds."
+
+
+def clinical_prediction_and_explanation(features: dict) -> str:
+    """Calculates probability score for Parkinson's using SVM and translates metrics to clinical explanations.
+    
+    Args:
+        features: A dictionary containing the patient's current vocal metrics.
+    """
+    global _GLOBAL_MODEL, _GLOBAL_SCALER, _GLOBAL_FEATURES
+    
+    if _GLOBAL_MODEL is None or _GLOBAL_SCALER is None:
+        return "Error: Clinical model was not initialized successfully."
+        
+    missing = [f for f in _GLOBAL_FEATURES if f not in features]
+    if missing:
+        return f"Error: Missing required features for prediction: {missing}"
+        
+    try:
+        input_array = np.array([[features[col] for col in _GLOBAL_FEATURES]])
+        input_scaled = _GLOBAL_SCALER.transform(input_array)
+        
+        probability = _GLOBAL_MODEL.predict_proba(input_scaled)[0][1] * 100 
+        distance = _GLOBAL_MODEL.decision_function(input_scaled)[0]
+        prediction = int(_GLOBAL_MODEL.predict(input_scaled)[0])
+        
+        diagnosis = "Positive for Parkinson's Disease indicators" if prediction == 1 else "Negative for Parkinson's Disease indicators"
+        
+        explanation = []
+        explanation.append(f"### Diagnostic Result: {diagnosis}")
+        explanation.append(f"**Affection Probability Score:** {probability:.2f}%")
+        explanation.append(f"**SVM Decision Boundary Distance:** {distance:.4f} (Positive means affected, Negative means healthy)")
+        
+        explanation.append("\n### Clinical Drivers Translation:")
+        
+        if 'PPE' in features:
+            val = features['PPE']
+            explanation.append(f"- **Pitch Period Entropy (PPE)**: The patient's PPE is {val:.4f}. PPE measures the inability to maintain steady phonation. A higher value indicates greater instability and non-linear vocal fold vibrations, which is a classic clinical indicator of Parkinsonian dysphonia.")
+            
+        if 'MDVP:Jitter(%)' in features:
+            val = features['MDVP:Jitter(%)']
+            explanation.append(f"- **Jitter**: The patient's Jitter is {val:.4f}%. Jitter measures cycle-to-cycle variations in fundamental frequency. Elevated jitter reflects the lack of neuromuscular control over vocal cord tension, leading to hoarseness or breathiness.")
+            
+        if 'MDVP:Shimmer' in features:
+            val = features['MDVP:Shimmer']
+            explanation.append(f"- **Shimmer**: The patient's Shimmer is {val:.4f}. Shimmer measures the cycle-to-cycle variation in vocal amplitude. High shimmer correlates with acoustic breathiness and indicates incomplete vocal fold adduction.")
+            
+        return "\n".join(explanation)
+        
+    except Exception as e:
+        return f"Error computing clinical prediction: {str(e)}"
+
+
+def retrieve_patient_history(patient_id: str) -> str:
+    """Fetches a patient's historical test sessions from a local JSON database.
+    
+    Args:
+        patient_id: The unique identifier for the patient.
+    """
+    import os
+    import json
+    
+    db_path = os.path.join("./data", "patient_sessions.json")
+    
+    if not os.path.exists(db_path):
+        os.makedirs(os.path.dirname(db_path), exist_ok=True)
+        mock_data = {
+            "PT-10042": {
+                "name": "Jane Doe",
+                "sessions": [
+                    {"date": "2025-11-12", "result": "Negative", "probability": 23.4},
+                    {"date": "2026-03-05", "result": "Positive", "probability": 78.1}
+                ]
+            }
+        }
+        with open(db_path, "w") as f:
+            json.dump(mock_data, f, indent=4)
+            
+    try:
+        with open(db_path, "r") as f:
+            data = json.load(f)
+            
+        if patient_id in data:
+            history = data[patient_id]
+            report = f"Patient Record Found for ID: {patient_id}\nName: {history.get('name', 'Unknown')}\n\nPast Sessions:\n"
+            for session in history.get('sessions', []):
+                report += f"- Date: {session.get('date')}, Diagnosis: {session.get('result')}, Probability: {session.get('probability')}%\n"
+            return report
+        else:
+            return f"No historical records found for Patient ID: {patient_id}."
+            
+    except Exception as e:
+        return f"Error retrieving patient history: {str(e)}"
+
 
 def train_and_evaluate_model(filename: str, model_type: str = "random_forest") -> str:
     """Trains a machine learning model on the chosen Parkinson's dataset and returns performance metrics.
@@ -18,18 +191,6 @@ def train_and_evaluate_model(filename: str, model_type: str = "random_forest") -
         filename: The name of the file to train on ('Parkinsson disease.csv' or 'parkinsons.data').
         model_type: The type of model to train ('random_forest', 'svm', or 'xgboost').
     """
-    import os
-    import pandas as pd
-    from sklearn.model_selection import train_test_split
-    from sklearn.preprocessing import StandardScaler
-    from sklearn.ensemble import RandomForestClassifier
-    from sklearn.svm import SVC
-    from sklearn.metrics import classification_report, accuracy_score, recall_score
-    try:
-        from xgboost import XGBClassifier
-    except ImportError:
-        XGBClassifier = None
-
     base_path = "./data"
     full_path = os.path.join(base_path, filename)
     
@@ -87,6 +248,7 @@ def train_and_evaluate_model(filename: str, model_type: str = "random_forest") -
     except Exception as e:
         return f"Error training model: {str(e)}"
         
+
 def inspect_dataset_schema(filename: str) -> str:
     """Reads a dataset from the local ./data directory and returns its rows, columns, and a sneak peek.
 
@@ -115,6 +277,7 @@ def inspect_dataset_schema(filename: str) -> str:
     except Exception as e:
         return f"Error reading file {filename}: {str(e)}"
 
+
 def cross_validate_and_feature_importance(filename: str, model_type: str = "random_forest") -> str:
     """Performs Stratified 5-Fold Cross-Validation on a model and returns metrics and top 5 features.
 
@@ -122,20 +285,6 @@ def cross_validate_and_feature_importance(filename: str, model_type: str = "rand
         filename: The name of the file to train on ('Parkinsson disease.csv' or 'parkinsons.data').
         model_type: The type of model to train ('random_forest', 'svm', or 'xgboost').
     """
-    import os
-    import numpy as np
-    import pandas as pd
-    from sklearn.model_selection import StratifiedKFold
-    from sklearn.preprocessing import StandardScaler
-    from sklearn.ensemble import RandomForestClassifier
-    from sklearn.svm import SVC
-    from sklearn.inspection import permutation_importance
-    from sklearn.metrics import accuracy_score, recall_score
-    try:
-        from xgboost import XGBClassifier
-    except ImportError:
-        XGBClassifier = None
-
     base_path = "./data"
     full_path = os.path.join(base_path, filename)
     
@@ -213,14 +362,13 @@ def cross_validate_and_feature_importance(filename: str, model_type: str = "rand
     except Exception as e:
         return f"Error running cross-validation: {str(e)}"
 
+
 def generate_diagnostic_report(report_content: str) -> str:
     """Saves a Markdown diagnostic report containing model metrics and top features to the project root.
 
     Args:
         report_content: The formatted Markdown content comparing the models and their top features.
     """
-    import os
-    
     file_path = "diagnostic_report.md"
     try:
         with open(file_path, "w") as f:
@@ -230,15 +378,13 @@ def generate_diagnostic_report(report_content: str) -> str:
     except Exception as e:
         return f"Error generating diagnostic report: {str(e)}"
 
+
 def generate_clinical_report(filename: str = "parkinsons.data") -> str:
     """Executes cross-validation on both models, compiles metrics, and saves a clinical-grade markdown report.
     
     Args:
         filename: The dataset file to use.
     """
-    import os
-    from datetime import datetime
-    
     rf_results = cross_validate_and_feature_importance(filename, "random_forest")
     svm_results = cross_validate_and_feature_importance(filename, "svm")
     
@@ -267,6 +413,7 @@ The results above highlight the models' capabilities in sensitivity/recall, whic
     except Exception as e:
         return f"Error generating clinical report: {str(e)}"
 
+
 # Define the local-first data science agent
 root_agent = Agent(
     name="parkinsons_analytics_agent",
@@ -277,11 +424,22 @@ root_agent = Agent(
     ),
     instruction=(
         "You are a specialized biomedical data scientist agent. Your objective is to assist in analyzing "
-        "the local vocal/clinical datasets located in './data/' to isolate parameters for detecting Parkinson's Disease. "
-        "Always invoke the inspect_dataset_schema tool to review the structural schemas of both 'Parkinsson disease.csv' "
-        "and 'parkinsons.data' when asked to summarize the datasets."
+        "the local vocal/clinical datasets located in './data/' to isolate parameters for detecting Parkinson's Disease.\n"
+        "1. Always invoke the inspect_dataset_schema tool to review structural schemas when asked to summarize datasets.\n"
+        "2. When assessing a patient session, FIRST use retrieve_patient_history to check for past records.\n"
+        "3. Use validate_vocal_features to ensure the incoming vocal metrics are physically possible.\n"
+        "4. Finally, use clinical_prediction_and_explanation to generate a probability of affection and translate the vocal metrics (like PPE, Jitter, Shimmer) into a plain English clinical reasoning."
     ),
-    tools=[inspect_dataset_schema, train_and_evaluate_model, cross_validate_and_feature_importance, generate_diagnostic_report, generate_clinical_report],
+    tools=[
+        inspect_dataset_schema, 
+        train_and_evaluate_model, 
+        cross_validate_and_feature_importance, 
+        generate_diagnostic_report, 
+        generate_clinical_report,
+        retrieve_patient_history,
+        validate_vocal_features,
+        clinical_prediction_and_explanation
+    ],
 )
 
 app = App(
@@ -297,7 +455,40 @@ if __name__ == "__main__":
     print("Connecting directly to Gemini via AI Studio Key...")
     print("-" * 50)
     
-    initial_prompt = "Execute the generate_clinical_report tool using 'parkinsons.data' to generate the final diagnostic report."
+    # Create a simulated vocal vector dict that fits the schema of parkinsons.data
+    # This represents real raw acoustic features gathered from a patient app
+    simulated_features = {
+        'MDVP:Fo(Hz)': 119.992,
+        'MDVP:Fhi(Hz)': 157.302,
+        'MDVP:Flo(Hz)': 74.997,
+        'MDVP:Jitter(%)': 0.00784,
+        'MDVP:Jitter(Abs)': 0.00007,
+        'MDVP:RAP': 0.0037,
+        'MDVP:PPQ': 0.00554,
+        'Jitter:DDP': 0.01109,
+        'MDVP:Shimmer': 0.04374,
+        'MDVP:Shimmer(dB)': 0.426,
+        'Shimmer:APQ3': 0.02182,
+        'Shimmer:APQ5': 0.0313,
+        'MDVP:APQ': 0.02971,
+        'Shimmer:DDA': 0.06545,
+        'NHR': 0.02211,
+        'HNR': 21.033,
+        'RPDE': 0.414783,
+        'DFA': 0.815285,
+        'spread1': -4.813031,
+        'spread2': 0.266482,
+        'D2': 2.301442,
+        'PPE': 0.284654
+    }
+    
+    initial_prompt = (
+        f"Hi Agent, I have a patient here with ID 'PT-10042'. Please check their history first. "
+        f"Then, run a safety validation on these raw vocal features: {json.dumps(simulated_features)}. "
+        f"If they pass validation, please run the clinical prediction to give me their affection probability score "
+        f"and explain what their PPE and Jitter values imply clinically."
+    )
+    
     print(f"\nUser: {initial_prompt}\n")
     
     try:
@@ -310,7 +501,7 @@ if __name__ == "__main__":
             contents=initial_prompt,
             config=types.GenerateContentConfig(
                 system_instruction=root_agent.instruction,
-                tools=[inspect_dataset_schema, train_and_evaluate_model, cross_validate_and_feature_importance, generate_diagnostic_report, generate_clinical_report],
+                tools=root_agent.tools,
                 temperature=0.2,
             )
         )
