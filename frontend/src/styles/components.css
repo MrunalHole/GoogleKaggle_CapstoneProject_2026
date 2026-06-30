@@ -1,0 +1,151 @@
+/* ============================================================
+   Shared component primitives
+   ============================================================ */
+
+.card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: var(--sp-6);
+}
+
+.card--interactive {
+  transition: transform var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+  cursor: pointer;
+}
+.card--interactive:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lift);
+}
+
+/* 3D canvas hover tooltip (rendered via @react-three/drei Html) */
+.region-tooltip {
+  background: var(--color-dark);
+  color: #fffdfc;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+  transform: translateY(-26px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+/* ---- Signature element: the "synapse divider" ----
+   A continuous line of connected nodes that thins and breaks apart
+   as the page moves into disease-progression content — visually
+   embodying neuron loss rather than decorating the page. */
+.synapse-divider {
+  width: 100%;
+  height: 64px;
+  display: block;
+}
+
+.synapse-divider path {
+  stroke: var(--color-border);
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.synapse-divider circle {
+  fill: var(--color-primary);
+}
+
+.synapse-divider--fading circle {
+  fill: var(--color-border);
+}
+
+/* ---- Pill / tag ---- */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding: var(--sp-1) var(--sp-3);
+  border-radius: var(--radius-pill);
+  background: var(--color-bg-sunken);
+  color: var(--color-body);
+}
+
+.tag--primary {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-deep);
+}
+.tag--success {
+  background: var(--color-success-soft);
+  color: #4d6e52;
+}
+.tag--warning {
+  background: var(--color-warning-soft);
+  color: #93611f;
+}
+.tag--danger {
+  background: var(--color-danger-soft);
+  color: #93392f;
+}
+
+/* ---- Disclaimer banner ---- */
+.disclaimer {
+  display: flex;
+  gap: var(--sp-3);
+  align-items: flex-start;
+  background: var(--color-bg-sunken);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4) var(--sp-5);
+  font-size: var(--fs-sm);
+  color: var(--color-body);
+  line-height: 1.55;
+}
+
+.disclaimer svg {
+  flex-shrink: 0;
+  color: var(--color-primary-deep);
+  margin-top: 2px;
+}
+
+.disclaimer strong {
+  color: var(--color-heading);
+}
+
+/* ---- Progress / score bar ---- */
+.score-bar {
+  width: 100%;
+  height: 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-bg-sunken);
+  overflow: hidden;
+}
+
+.score-bar__fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  transition: width var(--dur-slow) var(--ease-out);
+}
+
+/* ---- Generic page hero spacing helper ---- */
+.page-head {
+  padding: var(--sp-8) 0 var(--sp-6);
+}
+
+.page-head h1 {
+  font-size: var(--fs-2xl);
+  max-width: 22ch;
+}
+
+.page-head p {
+  margin-top: var(--sp-4);
+  font-size: var(--fs-md);
+  color: var(--color-body);
+  max-width: 56ch;
+}
+
+@media (max-width: 860px) {
+  .page-head h1 { font-size: var(--fs-xl); }
+  .page-head p { font-size: var(--fs-base); }
+}

@@ -1,0 +1,120 @@
+.treatments-layout {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: var(--sp-6);
+  margin-top: var(--sp-6);
+}
+
+.treatments-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.treatments-list__item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4);
+  text-align: left;
+}
+
+.treatments-list__item:hover {
+  border-color: var(--color-primary);
+}
+
+.treatments-list__item--active {
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary);
+}
+
+.treatments-list__icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--color-bg-sunken);
+  color: var(--color-primary-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.treatments-list__name {
+  display: block;
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  color: var(--color-heading);
+}
+
+.treatments-list__cat {
+  display: block;
+  font-size: var(--fs-2xs);
+  color: var(--color-body);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.treatments-detail h2 {
+  font-size: var(--fs-lg);
+  margin-top: var(--sp-3);
+}
+
+.treatments-detail__summary {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--color-body);
+}
+
+.treatments-detail__block {
+  margin-top: var(--sp-5);
+}
+
+.treatments-detail__block p:last-child {
+  font-size: var(--fs-sm);
+  color: var(--color-body);
+  line-height: 1.6;
+}
+
+.treatments-detail__block--highlight {
+  background: var(--color-bg-sunken);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4);
+}
+
+.treatments-detail__block--highlight ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.treatments-detail__block--highlight li {
+  font-size: var(--fs-sm);
+  color: var(--color-body);
+  padding-left: var(--sp-4);
+  position: relative;
+  line-height: 1.5;
+}
+
+.treatments-detail__block--highlight li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+}
+
+.treatments-disclaimer {
+  margin: var(--sp-7) 0 var(--sp-9);
+}
+
+@media (max-width: 860px) {
+  .treatments-layout { grid-template-columns: 1fr; }
+}

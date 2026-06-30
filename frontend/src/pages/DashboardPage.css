@@ -1,0 +1,199 @@
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: var(--sp-6);
+  margin-top: var(--sp-6);
+  padding-bottom: var(--sp-9);
+}
+
+.dashboard-card h2 {
+  font-size: var(--fs-md);
+  margin-bottom: var(--sp-5);
+}
+
+.dashboard-card--wide {
+  grid-column: span 2;
+}
+
+.dashboard-sliders {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-5);
+}
+
+.dashboard-slider__top {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--fs-sm);
+  color: var(--color-heading);
+  font-weight: 500;
+  margin-bottom: var(--sp-1);
+}
+
+.dashboard-slider__val {
+  font-family: var(--font-mono);
+  color: var(--color-primary-deep);
+  font-weight: 600;
+}
+
+.dashboard-slider input[type="range"] {
+  width: 100%;
+  accent-color: var(--color-primary-deep);
+}
+
+.dashboard-notes {
+  width: 100%;
+  min-height: 70px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-3);
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  margin-bottom: var(--sp-4);
+  resize: vertical;
+  background: var(--color-bg);
+}
+
+.dashboard-empty {
+  font-size: var(--fs-sm);
+  color: var(--color-body);
+}
+
+.dashboard-chart {
+  margin-top: var(--sp-2);
+}
+
+.dashboard-med-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.4fr auto;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-5);
+}
+
+.dashboard-med-form input {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-3);
+  font-size: var(--fs-sm);
+  background: var(--color-bg);
+  font-family: inherit;
+}
+
+.dashboard-med-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.dashboard-med-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  background: var(--color-bg-sunken);
+  border-radius: var(--radius-md);
+  padding: var(--sp-3) var(--sp-4);
+}
+
+.dashboard-med-item__info {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-width: 160px;
+  color: var(--color-primary-deep);
+}
+
+.dashboard-med-item__name {
+  font-weight: 600;
+  color: var(--color-heading);
+  font-size: var(--fs-sm);
+}
+
+.dashboard-med-item__dose {
+  font-size: var(--fs-xs);
+  color: var(--color-body);
+}
+
+.dashboard-med-item__doses {
+  display: flex;
+  gap: var(--sp-2);
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.dashboard-dose-pill {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  padding: var(--sp-1) var(--sp-3);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+  color: var(--color-body);
+}
+
+.dashboard-dose-pill--taken {
+  background: var(--color-success);
+  color: #fff;
+  border-color: var(--color-success);
+}
+
+.dashboard-med-item__remove {
+  background: none;
+  border: none;
+  color: var(--color-body);
+}
+
+.dashboard-med-item__remove:hover {
+  color: var(--color-danger);
+}
+
+.dashboard-history {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.dashboard-history__item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-3);
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--fs-xs);
+}
+
+.dashboard-history__date {
+  font-weight: 600;
+  color: var(--color-heading);
+  min-width: 64px;
+}
+
+.dashboard-history__tags {
+  display: flex;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.dashboard-history__notes {
+  color: var(--color-body);
+  font-style: italic;
+  flex-basis: 100%;
+}
+
+.dashboard-history__item button {
+  background: none;
+  border: none;
+  color: var(--color-body);
+}
+
+@media (max-width: 980px) {
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .dashboard-card--wide { grid-column: span 1; }
+  .dashboard-med-form { grid-template-columns: 1fr; }
+}

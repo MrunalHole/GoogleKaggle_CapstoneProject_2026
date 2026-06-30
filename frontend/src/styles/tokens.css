@@ -1,0 +1,120 @@
+/* ============================================================
+   Design Tokens — Lucent (Parkinson's Care & Education Platform)
+   ============================================================ */
+
+:root {
+  /* ---- Color: from project brief, applied exactly ---- */
+  --color-bg: #f6f4ef;
+  --color-primary: #f0a2a1;
+  --color-primary-hover: #e88988;
+  --color-dark: #343434;
+  --color-heading: #2b2b2b;
+  --color-body: #565656;
+  --color-border: #ddd7d2;
+  --color-card: #fffdfc;
+
+  /* Derived tones (kept within the same warm-neutral family) */
+  --color-primary-soft: #f8dad9;
+  --color-primary-deep: #c97675;
+  --color-dark-soft: #4a4a4a;
+  --color-bg-sunken: #efebe2;
+  --color-success: #7ea787;
+  --color-success-soft: #e3ebe2;
+  --color-warning: #d9924f;
+  --color-warning-soft: #f5e6d3;
+  --color-danger: #c4685f;
+  --color-danger-soft: #f3ddd9;
+  --color-focus: #2b2b2b;
+
+  /* ---- Typography ---- */
+  --font-display: "Fraunces", "Iowan Old Style", serif;
+  --font-body: "Inter", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", monospace;
+
+  --fs-2xs: 0.6875rem;   /* 11px */
+  --fs-xs: 0.8125rem;    /* 13px */
+  --fs-sm: 0.9375rem;    /* 15px */
+  --fs-base: 1.0625rem;  /* 17px */
+  --fs-md: 1.25rem;      /* 20px */
+  --fs-lg: 1.625rem;     /* 26px */
+  --fs-xl: 2.25rem;      /* 36px */
+  --fs-2xl: 3.25rem;     /* 52px */
+  --fs-3xl: 4.5rem;      /* 72px */
+
+  /* ---- Spacing scale ---- */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-7: 3rem;
+  --sp-8: 4rem;
+  --sp-9: 6rem;
+  --sp-10: 8rem;
+
+  /* ---- Radii & shadows ---- */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-pill: 999px;
+
+  --shadow-soft: 0 2px 14px rgba(43, 43, 43, 0.06);
+  --shadow-nav: 0 2px 20px rgba(43, 43, 43, 0.07);
+  --shadow-card: 0 10px 30px rgba(52, 52, 52, 0.07);
+  --shadow-lift: 0 18px 40px rgba(52, 52, 52, 0.12);
+
+  /* ---- Motion ---- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 0.18s;
+  --dur-base: 0.32s;
+  --dur-slow: 0.6s;
+
+  /* ---- Layout ---- */
+  --max-width: 1240px;
+  --nav-height: 76px;
+}
+
+@media (prefers-color-scheme: dark) {
+  /* Reserved: app currently ships one calibrated light theme by design
+     (see high-contrast mode in Accessibility settings for low-vision users) */
+}
+
+/* Reduced motion: respected globally */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---- High contrast theme toggle (accessibility) ---- */
+[data-contrast="high"] {
+  --color-bg: #ffffff;
+  --color-card: #ffffff;
+  --color-body: #1a1a1a;
+  --color-heading: #000000;
+  --color-border: #000000;
+  --color-primary: #b3403e;
+  --color-primary-hover: #8f3331;
+  --shadow-card: 0 0 0 2px #000000;
+  --shadow-soft: 0 0 0 1px #000000;
+}
+
+/* ---- Large text toggle (accessibility) ---- */
+[data-text-size="large"] {
+  --fs-2xs: 0.8125rem;
+  --fs-xs: 0.9375rem;
+  --fs-sm: 1.0625rem;
+  --fs-base: 1.1875rem;
+  --fs-md: 1.4rem;
+  --fs-lg: 1.85rem;
+  --fs-xl: 2.5rem;
+  --fs-2xl: 3.5rem;
+  --fs-3xl: 4.6rem;
+}
