@@ -29,3 +29,10 @@ class Settings(BaseSettings):
         return self.jwt_secret_key or os.environ.get("JWT_SECRET_KEY", "")
 
 settings = Settings()
+
+if not settings.auth_secret:
+    raise RuntimeError(
+        "JWT_SECRET_KEY is not set. Auth (signup/login/sessions) cannot work "
+        "without it. Add it to backend/.env (see .env.example) -- generate one with:\n"
+        '  python -c "import secrets; print(secrets.token_hex(32))"'
+    )
