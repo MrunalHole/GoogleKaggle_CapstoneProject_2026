@@ -136,7 +136,10 @@ def screen_csv(
     """
     try:
         # 1. Read CSV file
-        df = pd.read_csv(file.file)
+        try:
+            df = pd.read_csv(file.file)
+        except pd.errors.EmptyDataError:
+            raise HTTPException(status_code=400, detail="Uploaded CSV file is empty.")
         if df.empty:
             raise HTTPException(status_code=400, detail="Uploaded CSV file is empty.")
 

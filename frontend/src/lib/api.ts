@@ -98,6 +98,25 @@ export async function submitCsvFeatures(
   return res.json();
 }
 
+export interface ScreeningSession {
+  session_id: string;
+  date: string;
+  risk_score: number;
+  label: string;
+  model_used: string;
+  confidence: number;
+  clinical_explanation: string;
+}
+
+/** Returns [] in demo mode since there's no backend to log sessions against. */
+export async function getScreeningSessions(): Promise<ScreeningSession[]> {
+  if (USE_MOCK) return [];
+
+  const res = await fetch(`${API_BASE_URL}/sessions?limit=20`);
+  if (!res.ok) throw new Error(`Fetching session history failed (${res.status})`);
+  return res.json();
+}
+
 export interface ChatMessage {
   role: "user" | "assistant";
   content: string;

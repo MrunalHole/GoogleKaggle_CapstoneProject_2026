@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   LineChart,
   Line,
@@ -9,9 +9,11 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { Plus, Trash2, Pill, Check } from "lucide-react";
+import { Plus, Trash2, Pill, Check, ChevronDown } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import { useDashboardStore } from "../store/useAppStore";
 import Button from "../components/ui/Button";
+import { getScreeningSessions, type ScreeningSession } from "../lib/api";
 import "./DashboardPage.css";
 
 const SYMPTOM_FIELDS = [
@@ -36,6 +38,16 @@ export default function DashboardPage() {
   });
 
   const [medForm, setMedForm] = useState({ name: "", dosage: "", times: "08:00,20:00" });
+
+  const [sessions, setSessions] = useState<ScreeningSession[]>([]);
+  const [sessionsError, setSessionsError] = useState(false);
+  const [expandedSessionId, setExpandedSessionId] = useState<string | null>(null);
+
+  useEffect(() => {
+    getScreeningSessions()
+      .then(setSessions)
+      .catch(() => setSessionsError(true));
+  }, []);
 
   const chartData = [...symptomEntries]
     .sort((a, b) => a.date.localeCompare(b.date))
@@ -210,6 +222,51 @@ export default function DashboardPage() {
                     </button>
                   </li>
                 ))}
+              </ul>
+            )}
+          </div>
+
+          {/* ---------- Screening session history ---------- */}
+          <div className="card dashboard-card dashboard-card--wide">
+            <h2>Screening session history</h2>
+            {sessionsError ? (
+              <p className="dashboard-empty">
+                Couldn't reach the backend to load past screenings. Make sure
+                <code>VITE_API_BASE_URL</code> points at a running server.
+              </p>
+            ) : sessions.length === 0 ? (
+              <p className="dashboard-empty">
+                No screening sessions logged yet — results from the Voice
+                Screening tool will appear here.
+              </p>
+            ) : (
+              <ul className="dashboard-sessions">
+                {sessions.map((s) => {
+                  const expanded = expandedSessionId === s.session_id;
+                  return (
+                    <li key={s.session_id} className="dashboard-session">
+                      <button
+                        className="dashboard-session__summary"
+                        onClick={() => setExpandedSessionId(expanded ? null : s.session_id)}
+                        aria-expanded={expanded}
+                      >
+                        <span className="dashboard-session__date">
+                          {new Date(s.date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                        </span>
+                        <span className={`tag tag--${s.label === "low-likelihood" ? "success" : s.label === "moderate-likelihood" ? "warning" : "danger"}`}>
+                          {Math.round(s.risk_score * 100)}% · {s.label.replace("-", " ")}
+                        </span>
+                        <span className="dashboard-session__model">{s.model_used.replace("_", " ")}</span>
+                        <ChevronDown size={16} className={expanded ? "dashboard-session__chevron--open" : ""} />
+                      </button>
+                      {expanded && (
+                        <div className="dashboard-session__explanation">
+                          <ReactMarkdown>{s.clinical_explanation}</ReactMarkdown>
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </div>
