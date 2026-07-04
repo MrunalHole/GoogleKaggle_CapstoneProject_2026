@@ -15,6 +15,16 @@ It is designed to run in isolation and exposes endpoints fully aligned with the 
 
 ## Getting Started
 
+### 0. System Dependency: ffmpeg
+
+`/screen/voice` converts uploaded audio (webm/mp3/etc.) to WAV before running
+Praat-based acoustic analysis, which requires `ffmpeg` on the `PATH`:
+
+```bash
+brew install ffmpeg       # macOS
+apt-get install ffmpeg    # Debian/Ubuntu
+```
+
 ### 1. Database Setup (Docker)
 
 To spin up a local PostgreSQL container in the background, run:
@@ -42,12 +52,12 @@ Alternatively, with standard `pip`:
 ```bash
 python -m venv .venv
 .venv\Scripts\activate
-pip install -r pyproject.toml
+pip install -e .
 ```
 
 ### 3. Set Up Environment Variables
 
-Configure settings in `.env` (a local `.env` has been initialized for you). If you have a Gemini API key:
+Copy `.env.example` to `.env` and fill in your values. If you have a Gemini API key:
 
 ```env
 GEMINI_API_KEY=your_gemini_api_key_here

@@ -98,6 +98,31 @@ export async function submitCsvFeatures(
   return res.json();
 }
 
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+const MOCK_ASSISTANT_REPLY =
+  "This is a demo response — connect VITE_API_BASE_URL to a running backend to chat with the real assistant.";
+
+export async function submitAssistantMessage(
+  history: ChatMessage[]
+): Promise<string> {
+  if (USE_MOCK) {
+    return mockDelay(MOCK_ASSISTANT_REPLY, 900);
+  }
+
+  const res = await fetch(`${API_BASE_URL}/assistant/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages: history }),
+  });
+  if (!res.ok) throw new Error(`Assistant chat failed (${res.status})`);
+  const data = await res.json();
+  return data.reply;
+}
+
 export async function submitAttachment(
   file: File
 ): Promise<{ id: string; filename: string; status: "received" }> {
