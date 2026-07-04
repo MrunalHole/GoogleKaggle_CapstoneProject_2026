@@ -59,15 +59,18 @@ def test_screen_csv_empty_rejected(client):
 
 def test_screen_voice_extracts_real_features(client):
     try:
+        signup = client.post("/auth/signup", json={"email": "voicetest@example.com", "password": "testpass123"})
+        headers = {"Authorization": f"Bearer {signup.json()['access_token']}"}
+
         wav_bytes = _sine_wav_bytes()
         files = {"audio": ("clip.wav", wav_bytes, "audio/wav")}
-        res = client.post("/screen/voice", files=files)
+        res = client.post("/screen/voice", files=files, headers=headers)
         assert res.status_code == 200
         body = res.json()
         assert 0.0 <= body["riskScore"] <= 1.0
         assert body["modelUsed"] == "svm"
 
-        sessions = client.get("/sessions?limit=1").json()
+        sessions = client.get("/sessions?limit=1", headers=headers).json()
         features = sessions[0]["features"]
         # A pure ~150Hz tone should be picked up close to its true frequency,
         # proving this came from real analysis, not a byte-size-derived fake.

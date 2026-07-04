@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { SymptomEntry, MedicationReminder } from "../lib/api";
+import type { SymptomEntry, MedicationReminder, AuthUser } from "../lib/api";
+import { getToken, setToken, clearToken, getMe } from "../lib/api";
 
 interface AccessibilityState {
   highContrast: boolean;
@@ -78,3 +79,52 @@ export const useDashboardStore = create<DashboardState>()(
     { name: "lucent-dashboard" }
   )
 );
+
+interface AuthState {
+  user: AuthUser | null;
+  status: "checking" | "authenticated" | "anonymous";
+  setSession: (token: string) => Promise<void>;
+  checkAuth: () => Promise<void>;
+  logout: () => void;
+}
+
+export const useAuthStore = create<AuthState>()((set) => ({
+  user: null,
+  status: "checking",
+
+  // Called right after signup/login: we already have a fresh token, so trust
+  // it once to populate the user, rather than re-fetching immediately.
+  setSession: async (token) => {
+    setToken(token);
+    try {
+      const user = await getMe();
+      set({ user, status: "authenticated" });
+    } catch {
+      clearToken();
+      set({ user: null, status: "anonymous" });
+      throw new Error("Could not verify the new session.");
+    }
+  },
+
+  // Called on app load: a token in localStorage is never trusted blindly --
+  // it's re-validated against GET /auth/me, since it may have expired or
+  // been revoked since the last visit.
+  checkAuth: async () => {
+    if (!getToken()) {
+      set({ user: null, status: "anonymous" });
+      return;
+    }
+    try {
+      const user = await getMe();
+      set({ user, status: "authenticated" });
+    } catch {
+      clearToken();
+      set({ user: null, status: "anonymous" });
+    }
+  },
+
+  logout: () => {
+    clearToken();
+    set({ user: null, status: "anonymous" });
+  },
+}));

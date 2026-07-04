@@ -60,6 +60,19 @@
   color: var(--color-body);
 }
 
+.dashboard-login-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+
+.dashboard-login-prompt .dashboard-empty {
+  flex: 1;
+  min-width: 200px;
+}
+
 .dashboard-chart {
   margin-top: var(--sp-2);
 }

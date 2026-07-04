@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Suspense, lazy, useEffect } from "react";
 import Layout from "./components/layout/Layout";
-import { useAccessibilityStore } from "./store/useAppStore";
+import { useAccessibilityStore, useAuthStore } from "./store/useAppStore";
 import { useVoiceNavigation } from "./lib/useVoiceNavigation";
 
 import HomePage from "./pages/HomePage";
@@ -12,6 +12,8 @@ const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const TreatmentsPage = lazy(() => import("./pages/TreatmentsPage"));
 const AssistantPage = lazy(() => import("./pages/AssistantPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
+const LoginPage = lazy(() => import("./pages/LoginPage"));
+const SignupPage = lazy(() => import("./pages/SignupPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 function PageFallback() {
@@ -29,11 +31,16 @@ function VoiceNavListener() {
 
 export default function App() {
   const { highContrast, largeText } = useAccessibilityStore();
+  const checkAuth = useAuthStore((s) => s.checkAuth);
 
   useEffect(() => {
     document.documentElement.dataset.contrast = highContrast ? "high" : "normal";
     document.documentElement.dataset.textSize = largeText ? "large" : "normal";
   }, [highContrast, largeText]);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   return (
     <BrowserRouter>
@@ -49,6 +56,8 @@ export default function App() {
             <Route path="/treatments" element={<TreatmentsPage />} />
             <Route path="/assistant" element={<AssistantPage />} />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Suspense>

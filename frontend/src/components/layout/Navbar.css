@@ -72,6 +72,49 @@
   flex-shrink: 0;
 }
 
+.navbar__auth {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.navbar__auth-email {
+  font-size: var(--fs-xs);
+  color: var(--color-body);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.navbar__auth-logout {
+  background: none;
+  border: none;
+  color: var(--color-body);
+  padding: var(--sp-2);
+}
+
+.navbar__auth-logout:hover {
+  color: var(--color-danger);
+}
+
+.navbar__auth-login {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--color-primary-deep);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-primary);
+  white-space: nowrap;
+}
+
+.navbar__mobile-logout {
+  text-align: left;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+}
+
 .navbar__burger {
   display: none;
   background: none;

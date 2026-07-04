@@ -9,9 +9,10 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { Plus, Trash2, Pill, Check, ChevronDown } from "lucide-react";
+import { Plus, Trash2, Pill, Check, ChevronDown, LogIn } from "lucide-react";
+import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
-import { useDashboardStore } from "../store/useAppStore";
+import { useDashboardStore, useAuthStore } from "../store/useAppStore";
 import Button from "../components/ui/Button";
 import { getScreeningSessions, type ScreeningSession } from "../lib/api";
 import "./DashboardPage.css";
@@ -39,15 +40,17 @@ export default function DashboardPage() {
 
   const [medForm, setMedForm] = useState({ name: "", dosage: "", times: "08:00,20:00" });
 
+  const authStatus = useAuthStore((s) => s.status);
   const [sessions, setSessions] = useState<ScreeningSession[]>([]);
   const [sessionsError, setSessionsError] = useState(false);
   const [expandedSessionId, setExpandedSessionId] = useState<string | null>(null);
 
   useEffect(() => {
+    if (authStatus !== "authenticated") return;
     getScreeningSessions()
       .then(setSessions)
       .catch(() => setSessionsError(true));
-  }, []);
+  }, [authStatus]);
 
   const chartData = [...symptomEntries]
     .sort((a, b) => a.date.localeCompare(b.date))
@@ -229,7 +232,19 @@ export default function DashboardPage() {
           {/* ---------- Screening session history ---------- */}
           <div className="card dashboard-card dashboard-card--wide">
             <h2>Screening session history</h2>
-            {sessionsError ? (
+            {authStatus !== "authenticated" ? (
+              <div className="dashboard-login-prompt">
+                <p className="dashboard-empty">
+                  Log in to see your past screening sessions — anonymous
+                  screenings aren't tied to an account.
+                </p>
+                <Link to="/login">
+                  <Button variant="secondary" size="sm" icon={<LogIn size={14} />}>
+                    Log in
+                  </Button>
+                </Link>
+              </div>
+            ) : sessionsError ? (
               <p className="dashboard-empty">
                 Couldn't reach the backend to load past screenings. Make sure
                 <code>VITE_API_BASE_URL</code> points at a running server.

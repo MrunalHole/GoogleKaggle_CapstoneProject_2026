@@ -7,6 +7,25 @@
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
+const TOKEN_STORAGE_KEY = "lucent_token";
+
+export function getToken(): string | null {
+  return localStorage.getItem(TOKEN_STORAGE_KEY);
+}
+
+export function setToken(token: string): void {
+  localStorage.setItem(TOKEN_STORAGE_KEY, token);
+}
+
+export function clearToken(): void {
+  localStorage.removeItem(TOKEN_STORAGE_KEY);
+}
+
+function authHeaders(): Record<string, string> {
+  const token = getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 export interface VoiceFeatureScores {
   feature: string;
   importance: number;
@@ -49,6 +68,7 @@ export async function submitVoiceClip(
 
   const res = await fetch(`${API_BASE_URL}/screen/voice`, {
     method: "POST",
+    headers: authHeaders(),
     body: formData,
   });
   if (!res.ok) throw new Error(`Voice screening failed (${res.status})`);
@@ -63,6 +83,7 @@ export async function submitCsvFeatures(
 
   const res = await fetch(`${API_BASE_URL}/screen/csv`, {
     method: "POST",
+    headers: authHeaders(),
     body: formData,
   });
   if (!res.ok) throw new Error(`CSV screening failed (${res.status})`);
@@ -80,8 +101,51 @@ export interface ScreeningSession {
 }
 
 export async function getScreeningSessions(): Promise<ScreeningSession[]> {
-  const res = await fetch(`${API_BASE_URL}/sessions?limit=20`);
+  const res = await fetch(`${API_BASE_URL}/sessions?limit=20`, {
+    headers: authHeaders(),
+  });
   if (!res.ok) throw new Error(`Fetching session history failed (${res.status})`);
+  return res.json();
+}
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  created_at: string;
+}
+
+async function parseAuthError(res: Response, fallback: string): Promise<never> {
+  const body = await res.json().catch(() => null);
+  throw new Error(body?.detail ?? fallback);
+}
+
+export async function signup(email: string, password: string): Promise<string> {
+  const res = await fetch(`${API_BASE_URL}/auth/signup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  if (!res.ok) return parseAuthError(res, "Signup failed.");
+  const data = await res.json();
+  return data.access_token;
+}
+
+export async function login(email: string, password: string): Promise<string> {
+  const res = await fetch(`${API_BASE_URL}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  if (!res.ok) return parseAuthError(res, "Login failed.");
+  const data = await res.json();
+  return data.access_token;
+}
+
+export async function getMe(): Promise<AuthUser> {
+  const res = await fetch(`${API_BASE_URL}/auth/me`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error(`Not authenticated (${res.status})`);
   return res.json();
 }
 

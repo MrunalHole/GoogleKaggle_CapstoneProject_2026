@@ -2,23 +2,28 @@ import os
 import uuid
 import shutil
 import pandas as pd
-from typing import List
+from typing import List, Optional
 from fastapi import FastAPI, Depends, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import engine, Base, get_db
+from app.migrations import run_migrations
 from app.crud import create_session_record, get_session_records
 from app.schemas import ScreeningResult, AttachmentResponse, SessionDetailResponse, AssistantChatRequest, AssistantChatResponse
 from app.ml.model import load_and_train_models, predict_vocal_features, DEFAULT_VOICE_BASE
 from app.ml.audio_features import extract_voice_features
 from app.agent.explainer import get_clinical_explanation
 from app.agent.assistant import get_assistant_reply
+from app.auth import get_current_user, get_current_user_optional
+from app.models import User
+from app import auth_routes
 
 # Create database tables in PostgreSQL on startup
 try:
     Base.metadata.create_all(bind=engine)
+    run_migrations(engine)
     print("[OK] Database tables verified/created successfully.")
 except Exception as db_err:
     print(f"[WARNING] Could not connect to PostgreSQL database: {db_err}")
@@ -40,6 +45,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(auth_routes.router)
 
 # Uploads directory setup
 UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
@@ -66,14 +73,16 @@ def read_root():
 @app.post("/screen/voice", response_model=ScreeningResult)
 def screen_voice(
     audio: UploadFile = File(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional)
 ):
     """Voice Screening Endpoint.
 
-    Receives raw audio, saves it, extracts real acoustic biomarkers from the
-    recording via Praat, runs the SVM model prediction, calls Gemini to get
-    clinical explanation, logs the session to PostgreSQL, and returns the
-    ScreeningResult.
+    Works with or without login. Receives raw audio, saves it, extracts real
+    acoustic biomarkers from the recording via Praat, runs the deployed
+    model's prediction, calls Gemini to get clinical explanation, logs the
+    session to PostgreSQL (associated with the caller if authenticated,
+    anonymous otherwise), and returns the ScreeningResult.
     """
     try:
         # 1. Save uploaded audio file locally
@@ -107,7 +116,8 @@ def screen_voice(
             confidence=prediction_result["confidence"],
             features=features,
             clinical_explanation=explanation,
-            voice_file_path=file_path
+            voice_file_path=file_path,
+            user_id=current_user.id if current_user else None
         )
 
         # 6. Return response matching frontend types
@@ -127,12 +137,15 @@ def screen_voice(
 @app.post("/screen/csv", response_model=ScreeningResult)
 def screen_csv(
     file: UploadFile = File(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional)
 ):
     """CSV Features screening endpoint.
-    
-    Receives a CSV file of vocal features, parses column values, runs the RF model,
-    gets the explanation, logs the session, and returns the ScreeningResult.
+
+    Works with or without login. Receives a CSV file of vocal features,
+    parses column values, runs the deployed model's prediction, gets the
+    explanation, logs the session (associated with the caller if
+    authenticated, anonymous otherwise), and returns the ScreeningResult.
     """
     try:
         # 1. Read CSV file
@@ -173,7 +186,8 @@ def screen_csv(
             confidence=prediction_result["confidence"],
             features=input_features,
             clinical_explanation=explanation,
-            voice_file_path=None
+            voice_file_path=None,
+            user_id=current_user.id if current_user else None
         )
 
         # 6. Return response matching frontend types
@@ -231,10 +245,12 @@ def upload_attachment(
 def get_sessions(
     skip: int = 0,
     limit: int = 100,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    """Retrieves all logged session histories from PostgreSQL (for verification)."""
-    records = get_session_records(db, skip=skip, limit=limit)
+    """Retrieves the authenticated caller's own screening session history.
+    Requires login -- this endpoint used to return everyone's sessions."""
+    records = get_session_records(db, user_id=current_user.id, skip=skip, limit=limit)
     return [
         SessionDetailResponse(
             session_id=r.session_id,
