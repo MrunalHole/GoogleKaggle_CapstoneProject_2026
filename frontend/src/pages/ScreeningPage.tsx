@@ -7,7 +7,6 @@ import {
   submitVoiceClip,
   submitCsvFeatures,
   submitAttachment,
-  isMockMode,
   type ScreeningResult,
 } from "../lib/api";
 import "./ScreeningPage.css";
@@ -69,18 +68,6 @@ export default function ScreeningPage() {
             kind of screening works.
           </p>
         </div>
-
-        {isMockMode && (
-          <div className="disclaimer screening__mock-note">
-            <AlertTriangle size={18} />
-            <p>
-              <strong>Demo mode:</strong> no backend is connected yet, so
-              results below are simulated for UI preview. Set{" "}
-              <code>VITE_API_BASE_URL</code> to connect your real model
-              endpoint.
-            </p>
-          </div>
-        )}
 
         <div className="screening-layout">
           <div className="card screening-input">
