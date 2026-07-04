@@ -15,6 +15,16 @@ class ScreeningResult(BaseModel):
     confidence: float
     disclaimer: str
 
+class ChatMessage(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str
+
+class AssistantChatRequest(BaseModel):
+    messages: List[ChatMessage]
+
+class AssistantChatResponse(BaseModel):
+    reply: str
+
 class AttachmentResponse(BaseModel):
     id: str
     filename: str

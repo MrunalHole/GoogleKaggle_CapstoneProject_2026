@@ -1,11 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Send, Sparkles, Bot, User } from "lucide-react";
+import { submitAssistantMessage, type ChatMessage } from "../lib/api";
 import "./AssistantPage.css";
-
-interface ChatMessage {
-  role: "user" | "assistant";
-  content: string;
-}
 
 const SUGGESTED = [
   "What's the difference between Parkinson's and essential tremor?",
@@ -14,39 +10,9 @@ const SUGGESTED = [
   "Is Parkinson's hereditary?",
 ];
 
-const SYSTEM_PROMPT = `You are Lucent's educational assistant, embedded in a Parkinson's disease
-education platform. Answer clearly and accessibly. Always:
-- Stay factual and avoid alarming language
-- Make clear you are not providing medical diagnosis or advice
-- Suggest consulting a neurologist for anything specific to the user's own health
-- Keep answers concise (3-6 sentences) unless asked for more detail`;
-
-/**
- * This calls the Anthropic API directly from the client for the demo.
- * In production, route this through your own backend (e.g. the
- * agents-cli/ADK agent already scaffolded in this repo) so the API key
- * stays server-side rather than exposed in the browser.
- */
 async function askAssistant(history: ChatMessage[]): Promise<string> {
   try {
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-6",
-        max_tokens: 1000,
-        system: SYSTEM_PROMPT,
-        messages: history.map((m) => ({ role: m.role, content: m.content })),
-      }),
-    });
-    const data = await response.json();
-    const text = data.content
-      ?.map((block: { type: string; text?: string }) =>
-        block.type === "text" ? block.text : ""
-      )
-      .filter(Boolean)
-      .join("\n");
-    return text || "I wasn't able to generate a response just now — please try again.";
+    return await submitAssistantMessage(history);
   } catch {
     return "I'm having trouble connecting right now. This assistant needs a backend connection configured — check the README for setup.";
   }

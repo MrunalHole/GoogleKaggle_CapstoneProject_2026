@@ -1,6 +1,5 @@
 import os
 import random
-import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
@@ -167,42 +166,3 @@ def predict_vocal_features(features_dict: dict, model_type: str = "svm") -> dict
     except Exception as e:
         print(f"Error during ML prediction: {e}")
         raise e
-
-def simulate_voice_features(audio_file_size: int) -> dict:
-    """Simulates realistic acoustic biomarkers based on voice file size for SVM prediction."""
-    # Deterministic seed based on size
-    random.seed(audio_file_size)
-    np.random.seed(audio_file_size)
-
-    # Decide randomly if we simulate a healthy voice or Parkinsonian indicators
-    is_affected = random.choice([True, False])
-
-    features = {}
-    for key, base_val in DEFAULT_VOICE_BASE.items():
-        # Add perturbations
-        if is_affected:
-            # Shift features towards Parkinsonian values
-            if key in ['PPE', 'spread1', 'MDVP:Jitter(%)', 'MDVP:Shimmer']:
-                factor = 1.0 + random.uniform(0.1, 0.5)
-            elif key in ['MDVP:Fo(Hz)', 'HNR']:
-                factor = 1.0 - random.uniform(0.1, 0.3)
-            else:
-                factor = 1.0 + random.uniform(-0.1, 0.1)
-        else:
-            # Shift features towards healthy values
-            if key in ['PPE', 'spread1', 'MDVP:Jitter(%)', 'MDVP:Shimmer']:
-                factor = 1.0 - random.uniform(0.1, 0.3)
-            elif key in ['MDVP:Fo(Hz)', 'HNR']:
-                factor = 1.0 + random.uniform(0.05, 0.2)
-            else:
-                factor = 1.0 + random.uniform(-0.05, 0.05)
-        
-        features[key] = float(base_val * factor)
-    
-    # Ensure physical guardrails boundaries
-    features['MDVP:Fo(Hz)'] = max(50.0, min(400.0, features['MDVP:Fo(Hz)']))
-    for k in features:
-        if ('Jitter' in k or 'Shimmer' in k or k == 'PPE') and features[k] < 0:
-            features[k] = abs(features[k])
-
-    return features

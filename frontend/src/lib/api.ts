@@ -1,17 +1,11 @@
 /**
  * API client for the Parkinson's screening backend.
  *
- * This talks to whatever endpoint your model/agent is served from
- * (e.g. the Vertex AI Agent Engine deployment, or a local FastAPI/Flask
- * wrapper around the trained scikit-learn model during development).
- *
- * Set VITE_API_BASE_URL in a .env file to point at your real backend.
- * Until that's wired up, calls fall back to a clearly-labeled mock
- * response so the UI is fully clickable/demoable without a backend.
+ * Set VITE_API_BASE_URL in a .env file to point at your backend
+ * (see backend/README.md).
  */
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
-const USE_MOCK = !API_BASE_URL;
 
 export interface VoiceFeatureScores {
   feature: string;
@@ -47,27 +41,9 @@ export interface MedicationReminder {
   taken: Record<string, boolean>; // keyed by `${date}_${time}`
 }
 
-const STANDARD_DISCLAIMER =
-  "This is a screening aid built on a small research dataset. It is not a medical diagnosis. Please discuss any results with a neurologist or your primary care provider.";
-
-function mockDelay<T>(value: T, ms = 1400): Promise<T> {
-  return new Promise((resolve) => setTimeout(() => resolve(value), ms));
-}
-
-function pseudoRandomFromBlob(size: number): number {
-  // Deterministic-ish pseudo-randomness for demo purposes only.
-  const seed = (size % 97) / 97;
-  return Math.min(0.95, Math.max(0.04, seed));
-}
-
 export async function submitVoiceClip(
   audioBlob: Blob
 ): Promise<ScreeningResult> {
-  if (USE_MOCK) {
-    const score = pseudoRandomFromBlob(audioBlob.size);
-    return mockDelay(buildMockResult(score, "svm"));
-  }
-
   const formData = new FormData();
   formData.append("audio", audioBlob, "clip.webm");
 
@@ -82,11 +58,6 @@ export async function submitVoiceClip(
 export async function submitCsvFeatures(
   file: File
 ): Promise<ScreeningResult> {
-  if (USE_MOCK) {
-    const score = pseudoRandomFromBlob(file.size);
-    return mockDelay(buildMockResult(score, "random_forest"));
-  }
-
   const formData = new FormData();
   formData.append("file", file);
 
@@ -98,12 +69,43 @@ export async function submitCsvFeatures(
   return res.json();
 }
 
+export interface ScreeningSession {
+  session_id: string;
+  date: string;
+  risk_score: number;
+  label: string;
+  model_used: string;
+  confidence: number;
+  clinical_explanation: string;
+}
+
+export async function getScreeningSessions(): Promise<ScreeningSession[]> {
+  const res = await fetch(`${API_BASE_URL}/sessions?limit=20`);
+  if (!res.ok) throw new Error(`Fetching session history failed (${res.status})`);
+  return res.json();
+}
+
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export async function submitAssistantMessage(
+  history: ChatMessage[]
+): Promise<string> {
+  const res = await fetch(`${API_BASE_URL}/assistant/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages: history }),
+  });
+  if (!res.ok) throw new Error(`Assistant chat failed (${res.status})`);
+  const data = await res.json();
+  return data.reply;
+}
+
 export async function submitAttachment(
   file: File
 ): Promise<{ id: string; filename: string; status: "received" }> {
-  if (USE_MOCK) {
-    return mockDelay({ id: crypto.randomUUID(), filename: file.name, status: "received" as const }, 700);
-  }
   const formData = new FormData();
   formData.append("file", file);
   const res = await fetch(`${API_BASE_URL}/attachments`, {
@@ -113,32 +115,3 @@ export async function submitAttachment(
   if (!res.ok) throw new Error(`Upload failed (${res.status})`);
   return res.json();
 }
-
-function buildMockResult(
-  score: number,
-  modelUsed: ScreeningResult["modelUsed"]
-): ScreeningResult {
-  const label: ScreeningResult["label"] =
-    score < 0.4
-      ? "low-likelihood"
-      : score < 0.7
-      ? "moderate-likelihood"
-      : "elevated-likelihood";
-
-  return {
-    riskScore: score,
-    label,
-    modelUsed,
-    confidence: 0.7 + score * 0.1,
-    topFeatures: [
-      { feature: "PPE (pitch period entropy)", importance: 0.15 },
-      { feature: "spread1", importance: 0.11 },
-      { feature: "MDVP:Fo(Hz)", importance: 0.08 },
-      { feature: "MDVP:Flo(Hz)", importance: 0.06 },
-      { feature: "MDVP:Fhi(Hz)", importance: 0.06 },
-    ],
-    disclaimer: STANDARD_DISCLAIMER,
-  };
-}
-
-export const isMockMode = USE_MOCK;

@@ -14,7 +14,7 @@ export default function HomePage() {
           <div className="home-hero__copy">
             <span className="eyebrow">Parkinson's, explained and explored</span>
             <h1>
-              A brain you can turn,<br /> a disease you can <em>understand</em>.
+              A brain you can turn,<br /> <em>Parkinson's</em> you can understand.
             </h1>
             <p>
               Lucent is an interactive guide to Parkinson's disease — explore

@@ -10,9 +10,11 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.database import engine, Base, get_db
 from app.crud import create_session_record, get_session_records
-from app.schemas import ScreeningResult, AttachmentResponse, SessionDetailResponse
-from app.ml.model import load_and_train_models, predict_vocal_features, simulate_voice_features, DEFAULT_VOICE_BASE
+from app.schemas import ScreeningResult, AttachmentResponse, SessionDetailResponse, AssistantChatRequest, AssistantChatResponse
+from app.ml.model import load_and_train_models, predict_vocal_features, DEFAULT_VOICE_BASE
+from app.ml.audio_features import extract_voice_features
 from app.agent.explainer import get_clinical_explanation
+from app.agent.assistant import get_assistant_reply
 
 # Create database tables in PostgreSQL on startup
 try:
@@ -67,10 +69,11 @@ def screen_voice(
     db: Session = Depends(get_db)
 ):
     """Voice Screening Endpoint.
-    
-    Receives raw audio, saves it, generates simulated biomarkers based on the audio,
-    runs the SVM model prediction, calls Gemini to get clinical explanation,
-    logs the session to PostgreSQL, and returns the ScreeningResult.
+
+    Receives raw audio, saves it, extracts real acoustic biomarkers from the
+    recording via Praat, runs the SVM model prediction, calls Gemini to get
+    clinical explanation, logs the session to PostgreSQL, and returns the
+    ScreeningResult.
     """
     try:
         # 1. Save uploaded audio file locally
@@ -82,10 +85,8 @@ def screen_voice(
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(audio.file, buffer)
             
-        file_size = os.path.getsize(file_path)
-
-        # 2. Simulate realistic vocal features based on file size
-        features = simulate_voice_features(file_size)
+        # 2. Extract real acoustic biomarkers from the recording via Praat
+        features = extract_voice_features(file_path, DEFAULT_VOICE_BASE)
 
         # 3. Run predictions using the trained SVM model
         prediction_result = predict_vocal_features(features, model_type="svm")
@@ -135,7 +136,10 @@ def screen_csv(
     """
     try:
         # 1. Read CSV file
-        df = pd.read_csv(file.file)
+        try:
+            df = pd.read_csv(file.file)
+        except pd.errors.EmptyDataError:
+            raise HTTPException(status_code=400, detail="Uploaded CSV file is empty.")
         if df.empty:
             raise HTTPException(status_code=400, detail="Uploaded CSV file is empty.")
 
@@ -187,6 +191,17 @@ def screen_csv(
         if isinstance(e, HTTPException):
             raise e
         raise HTTPException(status_code=500, detail=f"CSV screening failed: {str(e)}")
+
+@app.post("/assistant/chat", response_model=AssistantChatResponse)
+def assistant_chat(request: AssistantChatRequest):
+    """Ask Lucent chat endpoint. Proxies the conversation to Gemini server-side
+    so the API key never reaches the browser."""
+    try:
+        reply = get_assistant_reply([m.model_dump() for m in request.messages])
+        return AssistantChatResponse(reply=reply)
+    except Exception as e:
+        print(f"Error in /assistant/chat: {e}")
+        raise HTTPException(status_code=500, detail=f"Assistant chat failed: {str(e)}")
 
 @app.post("/attachments", response_model=AttachmentResponse)
 def upload_attachment(

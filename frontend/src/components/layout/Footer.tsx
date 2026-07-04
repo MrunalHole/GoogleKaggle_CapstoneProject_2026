@@ -34,7 +34,7 @@ export default function Footer() {
         <div className="footer__col">
           <p className="footer__heading">Project</p>
           <a
-            href="https://github.com"
+            href="https://github.com/MrunalHole/GoogleKaggle_CapstoneProject_2026"
             target="_blank"
             rel="noreferrer"
             className="footer__github"
