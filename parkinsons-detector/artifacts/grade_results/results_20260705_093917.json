@@ -1,0 +1,1685 @@
+{
+  "eval_case_results": [
+    {
+      "eval_case_index": 0,
+      "response_candidate_results": [
+        {
+          "response_index": 0,
+          "metric_results": {
+            "custom_response_quality": {
+              "metric_name": "custom_response_quality",
+              "score": null,
+              "explanation": null,
+              "rubric_verdicts": null,
+              "raw_output": null,
+              "error_message": "403 PERMISSION_DENIED. {'error': {'code': 403, 'message': 'Agent Platform API has not been used in project eng-skyline-499820-g8 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/aiplatform.googleapis.com/overview?project=eng-skyline-499820-g8 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.', 'status': 'PERMISSION_DENIED', 'details': [{'@type': 'type.googleapis.com/google.rpc.ErrorInfo', 'reason': 'SERVICE_DISABLED', 'domain': 'googleapis.com', 'metadata': {'serviceTitle': 'Agent Platform API', 'service': 'aiplatform.googleapis.com', 'consumer': 'projects/eng-skyline-499820-g8', 'activationUrl': 'https://console.developers.google.com/apis/api/aiplatform.googleapis.com/overview?project=eng-skyline-499820-g8', 'containerInfo': 'eng-skyline-499820-g8'}}, {'@type': 'type.googleapis.com/google.rpc.LocalizedMessage', 'locale': 'en-US', 'message': 'Agent Platform API has not been used in project eng-skyline-499820-g8 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/aiplatform.googleapis.com/overview?project=eng-skyline-499820-g8 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.'}, {'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Google developers console API activation', 'url': 'https://console.developers.google.com/apis/api/aiplatform.googleapis.com/overview?project=eng-skyline-499820-g8'}]}]}}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "eval_case_index": 1,
+      "response_candidate_results": [
+        {
+          "response_index": 0,
+          "metric_results": {
+            "custom_response_quality": {
+              "metric_name": "custom_response_quality",
+              "score": null,
+              "explanation": null,
+              "rubric_verdicts": null,
+              "raw_output": null,
+              "error_message": "403 PERMISSION_DENIED. {'error': {'code': 403, 'message': 'Agent Platform API has not been used in project eng-skyline-499820-g8 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/aiplatform.googleapis.com/overview?project=eng-skyline-499820-g8 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.', 'status': 'PERMISSION_DENIED', 'details': [{'@type': 'type.googleapis.com/google.rpc.ErrorInfo', 'reason': 'SERVICE_DISABLED', 'domain': 'googleapis.com', 'metadata': {'service': 'aiplatform.googleapis.com', 'serviceTitle': 'Agent Platform API', 'activationUrl': 'https://console.developers.google.com/apis/api/aiplatform.googleapis.com/overview?project=eng-skyline-499820-g8', 'containerInfo': 'eng-skyline-499820-g8', 'consumer': 'projects/eng-skyline-499820-g8'}}, {'@type': 'type.googleapis.com/google.rpc.LocalizedMessage', 'locale': 'en-US', 'message': 'Agent Platform API has not been used in project eng-skyline-499820-g8 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/aiplatform.googleapis.com/overview?project=eng-skyline-499820-g8 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.'}, {'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Google developers console API activation', 'url': 'https://console.developers.google.com/apis/api/aiplatform.googleapis.com/overview?project=eng-skyline-499820-g8'}]}]}}"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "summary_metrics": [
+    {
+      "metric_name": "custom_response_quality",
+      "num_cases_total": 2,
+      "num_cases_valid": 0,
+      "num_cases_error": 2,
+      "mean_score": null,
+      "stdev_score": null,
+      "pass_rate": null
+    }
+  ],
+  "win_rates": null,
+  "evaluation_dataset": [
+    {
+      "bigquery_source": null,
+      "gcs_source": null,
+      "eval_cases": [
+        {
+          "prompt": {
+            "parts": [
+              {
+                "media_resolution": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "inline_data": null,
+                "text": "Hello, what can you help me with?",
+                "thought": null,
+                "thought_signature": null,
+                "video_metadata": null,
+                "tool_call": null,
+                "tool_response": null,
+                "part_metadata": null
+              }
+            ],
+            "role": "user"
+          },
+          "responses": [
+            {
+              "response": {
+                "parts": [
+                  {
+                    "media_resolution": null,
+                    "code_execution_result": null,
+                    "executable_code": null,
+                    "file_data": null,
+                    "function_call": null,
+                    "function_response": null,
+                    "inline_data": null,
+                    "text": "Hello! I am **parkinsons_analytics_agent**, a specialized biomedical data scientist agent. I am designed to assist you in analyzing vocal and clinical datasets to detect and track Parkinson's Disease. \n\nHere is what I can help you with:\n\n1. **Dataset Analysis & Schema Inspection**: \n   * Reviewing structures and features of Parkinson's datasets (e.g., `parkinsons.data` or `Parkinsson disease.csv`).\n   * Identifying key biomarkers, vocal features, and clinical parameters.\n\n2. **Model Training, Evaluation & Feature Importance**:\n   * Training Machine Learning models (such as Random Forest, SVM, or XGBoost) on Parkinson's datasets.\n   * Performing Stratified 5-Fold Cross-Validation to assess performance metrics (accuracy, precision, recall, F1-score).\n   * Identifying the most predictive vocal metrics (e.g., Jitter, Shimmer, PPE, HNR).\n\n3. **Clinical Patient Assessment & History Tracking**:\n   * Retrieving a patient's historical test sessions to monitor disease progression.\n   * Validating raw patient vocal feature metrics to ensure physiological plausibility and flag anomalies.\n   * Running clinical predictions (probability of Parkinson's Disease) and translating complex acoustic metrics into plain English clinical explanations.\n\n4. **Report Generation**:\n   * Compiling diagnostic and clinical-grade reports in Markdown format comparing model performances and key biomarker insights.\n\nHow can I assist you with your biomedical data analysis or patient assessment today?",
+                    "thought": null,
+                    "thought_signature": null,
+                    "video_metadata": null,
+                    "tool_call": null,
+                    "tool_response": null,
+                    "part_metadata": null
+                  }
+                ],
+                "role": "model"
+              }
+            }
+          ],
+          "reference": null,
+          "system_instruction": null,
+          "conversation_history": null,
+          "rubric_groups": null,
+          "eval_case_id": "greeting",
+          "intermediate_events": null,
+          "agent_info": null,
+          "agent_data": {
+            "agents": {
+              "parkinsons_analytics_agent": {
+                "agent_id": "parkinsons_analytics_agent",
+                "agent_type": "LlmAgent",
+                "description": "",
+                "instruction": "You are a specialized biomedical data scientist agent. Your objective is to assist in analyzing the local vocal/clinical datasets located in './data/' to isolate parameters for detecting Parkinson's Disease.\n1. Always invoke the inspect_dataset_schema tool to review structural schemas when asked to summarize datasets.\n2. When assessing a patient session, FIRST use retrieve_patient_history to check for past records.\n3. Use validate_vocal_features to ensure the incoming vocal metrics are physically possible.\n4. Finally, use clinical_prediction_and_explanation to generate a probability of affection and translate the vocal metrics (like PPE, Jitter, Shimmer) into a plain English clinical reasoning.",
+                "tools": [
+                  {
+                    "retrieval": null,
+                    "computer_use": null,
+                    "file_search": null,
+                    "google_search": null,
+                    "google_maps": null,
+                    "code_execution": null,
+                    "enterprise_web_search": null,
+                    "function_declarations": [
+                      {
+                        "description": "Reads a dataset from the local ./data directory and returns its rows, columns, and a sneak peek.\n\nArgs:\n    filename: The exact name of the file to inspect (e.g., 'Parkinsson disease.csv' or 'parkinsons.data').",
+                        "name": "inspect_dataset_schema",
+                        "parameters": {
+                          "additional_properties": null,
+                          "defs": null,
+                          "ref": null,
+                          "any_of": null,
+                          "default": null,
+                          "description": null,
+                          "enum": null,
+                          "example": null,
+                          "format": null,
+                          "items": null,
+                          "max_items": null,
+                          "max_length": null,
+                          "max_properties": null,
+                          "maximum": null,
+                          "min_items": null,
+                          "min_length": null,
+                          "min_properties": null,
+                          "minimum": null,
+                          "nullable": null,
+                          "pattern": null,
+                          "properties": {
+                            "filename": {
+                              "additional_properties": null,
+                              "defs": null,
+                              "ref": null,
+                              "any_of": null,
+                              "default": null,
+                              "description": null,
+                              "enum": null,
+                              "example": null,
+                              "format": null,
+                              "items": null,
+                              "max_items": null,
+                              "max_length": null,
+                              "max_properties": null,
+                              "maximum": null,
+                              "min_items": null,
+                              "min_length": null,
+                              "min_properties": null,
+                              "minimum": null,
+                              "nullable": null,
+                              "pattern": null,
+                              "properties": null,
+                              "property_ordering": null,
+                              "required": null,
+                              "title": null,
+                              "type": "STRING"
+                            }
+                          },
+                          "property_ordering": null,
+                          "required": [
+                            "filename"
+                          ],
+                          "title": null,
+                          "type": "OBJECT"
+                        },
+                        "parameters_json_schema": null,
+                        "response": null,
+                        "response_json_schema": null,
+                        "behavior": null
+                      }
+                    ],
+                    "google_search_retrieval": null,
+                    "parallel_ai_search": null,
+                    "url_context": null,
+                    "mcp_servers": null
+                  },
+                  {
+                    "retrieval": null,
+                    "computer_use": null,
+                    "file_search": null,
+                    "google_search": null,
+                    "google_maps": null,
+                    "code_execution": null,
+                    "enterprise_web_search": null,
+                    "function_declarations": [
+                      {
+                        "description": "Trains a machine learning model on the chosen Parkinson's dataset and returns performance metrics.\n\nArgs:\n    filename: The name of the file to train on ('Parkinsson disease.csv' or 'parkinsons.data').\n    model_type: The type of model to train ('random_forest', 'svm', or 'xgboost').",
+                        "name": "train_and_evaluate_model",
+                        "parameters": {
+                          "additional_properties": null,
+                          "defs": null,
+                          "ref": null,
+                          "any_of": null,
+                          "default": null,
+                          "description": null,
+                          "enum": null,
+                          "example": null,
+                          "format": null,
+                          "items": null,
+                          "max_items": null,
+                          "max_length": null,
+                          "max_properties": null,
+                          "maximum": null,
+                          "min_items": null,
+                          "min_length": null,
+                          "min_properties": null,
+                          "minimum": null,
+                          "nullable": null,
+                          "pattern": null,
+                          "properties": {
+                            "filename": {
+                              "additional_properties": null,
+                              "defs": null,
+                              "ref": null,
+                              "any_of": null,
+                              "default": null,
+                              "description": null,
+                              "enum": null,
+                              "example": null,
+                              "format": null,
+                              "items": null,
+                              "max_items": null,
+                              "max_length": null,
+                              "max_properties": null,
+                              "maximum": null,
+                              "min_items": null,
+                              "min_length": null,
+                              "min_properties": null,
+                              "minimum": null,
+                              "nullable": null,
+                              "pattern": null,
+                              "properties": null,
+                              "property_ordering": null,
+                              "required": null,
+                              "title": null,
+                              "type": "STRING"
+                            },
+                            "model_type": {
+                              "additional_properties": null,
+                              "defs": null,
+                              "ref": null,
+                              "any_of": null,
+                              "default": "random_forest",
+                              "description": null,
+                              "enum": null,
+                              "example": null,
+                              "format": null,
+                              "items": null,
+                              "max_items": null,
+                              "max_length": null,
+                              "max_properties": null,
+                              "maximum": null,
+                              "min_items": null,
+                              "min_length": null,
+                              "min_properties": null,
+                              "minimum": null,
+                              "nullable": null,
+                              "pattern": null,
+                              "properties": null,
+                              "property_ordering": null,
+                              "required": null,
+                              "title": null,
+                              "type": "STRING"
+                            }
+                          },
+                          "property_ordering": null,
+                          "required": [
+                            "filename"
+                          ],
+                          "title": null,
+                          "type": "OBJECT"
+                        },
+                        "parameters_json_schema": null,
+                        "response": null,
+                        "response_json_schema": null,
+                        "behavior": null
+                      }
+                    ],
+                    "google_search_retrieval": null,
+                    "parallel_ai_search": null,
+                    "url_context": null,
+                    "mcp_servers": null
+                  },
+                  {
+                    "retrieval": null,
+                    "computer_use": null,
+                    "file_search": null,
+                    "google_search": null,
+                    "google_maps": null,
+                    "code_execution": null,
+                    "enterprise_web_search": null,
+                    "function_declarations": [
+                      {
+                        "description": "Performs Stratified 5-Fold Cross-Validation on a model and returns metrics and top 5 features.\n\nArgs:\n    filename: The name of the file to train on ('Parkinsson disease.csv' or 'parkinsons.data').\n    model_type: The type of model to train ('random_forest', 'svm', or 'xgboost').",
+                        "name": "cross_validate_and_feature_importance",
+                        "parameters": {
+                          "additional_properties": null,
+                          "defs": null,
+                          "ref": null,
+                          "any_of": null,
+                          "default": null,
+                          "description": null,
+                          "enum": null,
+                          "example": null,
+                          "format": null,
+                          "items": null,
+                          "max_items": null,
+                          "max_length": null,
+                          "max_properties": null,
+                          "maximum": null,
+                          "min_items": null,
+                          "min_length": null,
+                          "min_properties": null,
+                          "minimum": null,
+                          "nullable": null,
+                          "pattern": null,
+                          "properties": {
+                            "filename": {
+                              "additional_properties": null,
+                              "defs": null,
+                              "ref": null,
+                              "any_of": null,
+                              "default": null,
+                              "description": null,
+                              "enum": null,
+                              "example": null,
+                              "format": null,
+                              "items": null,
+                              "max_items": null,
+                              "max_length": null,
+                              "max_properties": null,
+                              "maximum": null,
+                              "min_items": null,
+                              "min_length": null,
+                              "min_properties": null,
+                              "minimum": null,
+                              "nullable": null,
+                              "pattern": null,
+                              "properties": null,
+                              "property_ordering": null,
+                              "required": null,
+                              "title": null,
+                              "type": "STRING"
+                            },
+                            "model_type": {
+                              "additional_properties": null,
+                              "defs": null,
+                              "ref": null,
+                              "any_of": null,
+                              "default": "random_forest",
+                              "description": null,
+                              "enum": null,
+                              "example": null,
+                              "format": null,
+                              "items": null,
+                              "max_items": null,
+                              "max_length": null,
+                              "max_properties": null,
+                              "maximum": null,
+                              "min_items": null,
+                              "min_length": null,
+                              "min_properties": null,
+                              "minimum": null,
+                              "nullable": null,
+                              "pattern": null,
+                              "properties": null,
+                              "property_ordering": null,
+                              "required": null,
+                              "title": null,
+                              "type": "STRING"
+                            }
+                          },
+                          "property_ordering": null,
+                          "required": [
+                            "filename"
+                          ],
+                          "title": null,
+                          "type": "OBJECT"
+                        },
+                        "parameters_json_schema": null,
+                        "response": null,
+                        "response_json_schema": null,
+                        "behavior": null
+                      }
+                    ],
+                    "google_search_retrieval": null,
+                    "parallel_ai_search": null,
+                    "url_context": null,
+                    "mcp_servers": null
+                  },
+                  {
+                    "retrieval": null,
+                    "computer_use": null,
+                    "file_search": null,
+                    "google_search": null,
+                    "google_maps": null,
+                    "code_execution": null,
+                    "enterprise_web_search": null,
+                    "function_declarations": [
+                      {
+                        "description": "Saves a Markdown diagnostic report containing model metrics and top features to the project root.\n\nArgs:\n    report_content: The formatted Markdown content comparing the models and their top features.",
+                        "name": "generate_diagnostic_report",
+                        "parameters": {
+                          "additional_properties": null,
+                          "defs": null,
+                          "ref": null,
+                          "any_of": null,
+                          "default": null,
+                          "description": null,
+                          "enum": null,
+                          "example": null,
+                          "format": null,
+                          "items": null,
+                          "max_items": null,
+                          "max_length": null,
+                          "max_properties": null,
+                          "maximum": null,
+                          "min_items": null,
+                          "min_length": null,
+                          "min_properties": null,
+                          "minimum": null,
+                          "nullable": null,
+                          "pattern": null,
+                          "properties": {
+                            "report_content": {
+                              "additional_properties": null,
+                              "defs": null,
+                              "ref": null,
+                              "any_of": null,
+                              "default": null,
+                              "description": null,
+                              "enum": null,
+                              "example": null,
+                              "format": null,
+                              "items": null,
+                              "max_items": null,
+                              "max_length": null,
+                              "max_properties": null,
+                              "maximum": null,
+                              "min_items": null,
+                              "min_length": null,
+                              "min_properties": null,
+                              "minimum": null,
+                              "nullable": null,
+                              "pattern": null,
+                              "properties": null,
+                              "property_ordering": null,
+                              "required": null,
+                              "title": null,
+                              "type": "STRING"
+                            }
+                          },
+                          "property_ordering": null,
+                          "required": [
+                            "report_content"
+                          ],
+                          "title": null,
+                          "type": "OBJECT"
+                        },
+                        "parameters_json_schema": null,
+                        "response": null,
+                        "response_json_schema": null,
+                        "behavior": null
+                      }
+                    ],
+                    "google_search_retrieval": null,
+                    "parallel_ai_search": null,
+                    "url_context": null,
+                    "mcp_servers": null
+                  },
+                  {
+                    "retrieval": null,
+                    "computer_use": null,
+                    "file_search": null,
+                    "google_search": null,
+                    "google_maps": null,
+                    "code_execution": null,
+                    "enterprise_web_search": null,
+                    "function_declarations": [
+                      {
+                        "description": "Executes cross-validation on both models, compiles metrics, and saves a clinical-grade markdown report.\n\nArgs:\n    filename: The dataset file to use.",
+                        "name": "generate_clinical_report",
+                        "parameters": {
+                          "additional_properties": null,
+                          "defs": null,
+                          "ref": null,
+                          "any_of": null,
+                          "default": null,
+                          "description": null,
+                          "enum": null,
+                          "example": null,
+                          "format": null,
+                          "items": null,
+                          "max_items": null,
+                          "max_length": null,
+                          "max_properties": null,
+                          "maximum": null,
+                          "min_items": null,
+                          "min_length": null,
+                          "min_properties": null,
+                          "minimum": null,
+                          "nullable": null,
+                          "pattern": null,
+                          "properties": {
+                            "filename": {
+                              "additional_properties": null,
+                              "defs": null,
+                              "ref": null,
+                              "any_of": null,
+                              "default": "parkinsons.data",
+                              "description": null,
+                              "enum": null,
+                              "example": null,
+                              "format": null,
+                              "items": null,
+                              "max_items": null,
+                              "max_length": null,
+                              "max_properties": null,
+                              "maximum": null,
+                              "min_items": null,
+                              "min_length": null,
+                              "min_properties": null,
+                              "minimum": null,
+                              "nullable": null,
+                              "pattern": null,
+                              "properties": null,
+                              "property_ordering": null,
+                              "required": null,
+                              "title": null,
+                              "type": "STRING"
+                            }
+                          },
+                          "property_ordering": null,
+                          "required": [],
+                          "title": null,
+                          "type": "OBJECT"
+                        },
+                        "parameters_json_schema": null,
+                        "response": null,
+                        "response_json_schema": null,
+                        "behavior": null
+                      }
+                    ],
+                    "google_search_retrieval": null,
+                    "parallel_ai_search": null,
+                    "url_context": null,
+                    "mcp_servers": null
+                  },
+                  {
+                    "retrieval": null,
+                    "computer_use": null,
+                    "file_search": null,
+                    "google_search": null,
+                    "google_maps": null,
+                    "code_execution": null,
+                    "enterprise_web_search": null,
+                    "function_declarations": [
+                      {
+                        "description": "Fetches a patient's historical test sessions from a local JSON database.\n\nArgs:\n    patient_id: The unique identifier for the patient.",
+                        "name": "retrieve_patient_history",
+                        "parameters": {
+                          "additional_properties": null,
+                          "defs": null,
+                          "ref": null,
+                          "any_of": null,
+                          "default": null,
+                          "description": null,
+                          "enum": null,
+                          "example": null,
+                          "format": null,
+                          "items": null,
+                          "max_items": null,
+                          "max_length": null,
+                          "max_properties": null,
+                          "maximum": null,
+                          "min_items": null,
+                          "min_length": null,
+                          "min_properties": null,
+                          "minimum": null,
+                          "nullable": null,
+                          "pattern": null,
+                          "properties": {
+                            "patient_id": {
+                              "additional_properties": null,
+                              "defs": null,
+                              "ref": null,
+                              "any_of": null,
+                              "default": null,
+                              "description": null,
+                              "enum": null,
+                              "example": null,
+                              "format": null,
+                              "items": null,
+                              "max_items": null,
+                              "max_length": null,
+                              "max_properties": null,
+                              "maximum": null,
+                              "min_items": null,
+                              "min_length": null,
+                              "min_properties": null,
+                              "minimum": null,
+                              "nullable": null,
+                              "pattern": null,
+                              "properties": null,
+                              "property_ordering": null,
+                              "required": null,
+                              "title": null,
+                              "type": "STRING"
+                            }
+                          },
+                          "property_ordering": null,
+                          "required": [
+                            "patient_id"
+                          ],
+                          "title": null,
+                          "type": "OBJECT"
+                        },
+                        "parameters_json_schema": null,
+                        "response": null,
+                        "response_json_schema": null,
+                        "behavior": null
+                      }
+                    ],
+                    "google_search_retrieval": null,
+                    "parallel_ai_search": null,
+                    "url_context": null,
+                    "mcp_servers": null
+                  },
+                  {
+                    "retrieval": null,
+                    "computer_use": null,
+                    "file_search": null,
+                    "google_search": null,
+                    "google_maps": null,
+                    "code_execution": null,
+                    "enterprise_web_search": null,
+                    "function_declarations": [
+                      {
+                        "description": "Validates raw vocal feature arrays to prevent model crashes and flag anomalies.\n\nArgs:\n    features: A dictionary containing vocal metric names as keys and their numeric values.",
+                        "name": "validate_vocal_features",
+                        "parameters": {
+                          "additional_properties": null,
+                          "defs": null,
+                          "ref": null,
+                          "any_of": null,
+                          "default": null,
+                          "description": null,
+                          "enum": null,
+                          "example": null,
+                          "format": null,
+                          "items": null,
+                          "max_items": null,
+                          "max_length": null,
+                          "max_properties": null,
+                          "maximum": null,
+                          "min_items": null,
+                          "min_length": null,
+                          "min_properties": null,
+                          "minimum": null,
+                          "nullable": null,
+                          "pattern": null,
+                          "properties": {
+                            "features": {
+                              "additional_properties": null,
+                              "defs": null,
+                              "ref": null,
+                              "any_of": null,
+                              "default": null,
+                              "description": null,
+                              "enum": null,
+                              "example": null,
+                              "format": null,
+                              "items": null,
+                              "max_items": null,
+                              "max_length": null,
+                              "max_properties": null,
+                              "maximum": null,
+                              "min_items": null,
+                              "min_length": null,
+                              "min_properties": null,
+                              "minimum": null,
+                              "nullable": null,
+                              "pattern": null,
+                              "properties": null,
+                              "property_ordering": null,
+                              "required": null,
+                              "title": null,
+                              "type": "OBJECT"
+                            }
+                          },
+                          "property_ordering": null,
+                          "required": [
+                            "features"
+                          ],
+                          "title": null,
+                          "type": "OBJECT"
+                        },
+                        "parameters_json_schema": null,
+                        "response": null,
+                        "response_json_schema": null,
+                        "behavior": null
+                      }
+                    ],
+                    "google_search_retrieval": null,
+                    "parallel_ai_search": null,
+                    "url_context": null,
+                    "mcp_servers": null
+                  },
+                  {
+                    "retrieval": null,
+                    "computer_use": null,
+                    "file_search": null,
+                    "google_search": null,
+                    "google_maps": null,
+                    "code_execution": null,
+                    "enterprise_web_search": null,
+                    "function_declarations": [
+                      {
+                        "description": "Calculates probability score for Parkinson's using SVM and translates metrics to clinical explanations.\n\nArgs:\n    features: A dictionary containing the patient's current vocal metrics.",
+                        "name": "clinical_prediction_and_explanation",
+                        "parameters": {
+                          "additional_properties": null,
+                          "defs": null,
+                          "ref": null,
+                          "any_of": null,
+                          "default": null,
+                          "description": null,
+                          "enum": null,
+                          "example": null,
+                          "format": null,
+                          "items": null,
+                          "max_items": null,
+                          "max_length": null,
+                          "max_properties": null,
+                          "maximum": null,
+                          "min_items": null,
+                          "min_length": null,
+                          "min_properties": null,
+                          "minimum": null,
+                          "nullable": null,
+                          "pattern": null,
+                          "properties": {
+                            "features": {
+                              "additional_properties": null,
+                              "defs": null,
+                              "ref": null,
+                              "any_of": null,
+                              "default": null,
+                              "description": null,
+                              "enum": null,
+                              "example": null,
+                              "format": null,
+                              "items": null,
+                              "max_items": null,
+                              "max_length": null,
+                              "max_properties": null,
+                              "maximum": null,
+                              "min_items": null,
+                              "min_length": null,
+                              "min_properties": null,
+                              "minimum": null,
+                              "nullable": null,
+                              "pattern": null,
+                              "properties": null,
+                              "property_ordering": null,
+                              "required": null,
+                              "title": null,
+                              "type": "OBJECT"
+                            }
+                          },
+                          "property_ordering": null,
+                          "required": [
+                            "features"
+                          ],
+                          "title": null,
+                          "type": "OBJECT"
+                        },
+                        "parameters_json_schema": null,
+                        "response": null,
+                        "response_json_schema": null,
+                        "behavior": null
+                      }
+                    ],
+                    "google_search_retrieval": null,
+                    "parallel_ai_search": null,
+                    "url_context": null,
+                    "mcp_servers": null
+                  }
+                ],
+                "sub_agents": []
+              }
+            },
+            "turns": [
+              {
+                "turn_index": 0,
+                "turn_id": "turn_0",
+                "events": [
+                  {
+                    "author": "parkinsons_analytics_agent",
+                    "content": {
+                      "parts": [
+                        {
+                          "media_resolution": null,
+                          "code_execution_result": null,
+                          "executable_code": null,
+                          "file_data": null,
+                          "function_call": null,
+                          "function_response": null,
+                          "inline_data": null,
+                          "text": "Hello! I am **parkinsons_analytics_agent**, a specialized biomedical data scientist agent. I am designed to assist you in analyzing vocal and clinical datasets to detect and track Parkinson's Disease. \n\nHere is what I can help you with:\n\n1. **Dataset Analysis & Schema Inspection**: \n   * Reviewing structures and features of Parkinson's datasets (e.g., `parkinsons.data` or `Parkinsson disease.csv`).\n   * Identifying key biomarkers, vocal features, and clinical parameters.\n\n2. **Model Training, Evaluation & Feature Importance**:\n   * Training Machine Learning models (such as Random Forest, SVM, or XGBoost) on Parkinson's datasets.\n   * Performing Stratified 5-Fold Cross-Validation to assess performance metrics (accuracy, precision, recall, F1-score).\n   * Identifying the most predictive vocal metrics (e.g., Jitter, Shimmer, PPE, HNR).\n\n3. **Clinical Patient Assessment & History Tracking**:\n   * Retrieving a patient's historical test sessions to monitor disease progression.\n   * Validating raw patient vocal feature metrics to ensure physiological plausibility and flag anomalies.\n   * Running clinical predictions (probability of Parkinson's Disease) and translating complex acoustic metrics into plain English clinical explanations.\n\n4. **Report Generation**:\n   * Compiling diagnostic and clinical-grade reports in Markdown format comparing model performances and key biomarker insights.\n\nHow can I assist you with your biomedical data analysis or patient assessment today?",
+                          "thought": null,
+                          "thought_signature": null,
+                          "video_metadata": null,
+                          "tool_call": null,
+                          "tool_response": null,
+                          "part_metadata": null
+                        }
+                      ],
+                      "role": "model"
+                    },
+                    "event_time": null,
+                    "state_delta": null,
+                    "active_tools": null
+                  }
+                ]
+              }
+            ]
+          },
+          "user_scenario": null
+        },
+        {
+          "prompt": {
+            "parts": [
+              {
+                "media_resolution": null,
+                "code_execution_result": null,
+                "executable_code": null,
+                "file_data": null,
+                "function_call": null,
+                "function_response": null,
+                "inline_data": null,
+                "text": "What's the weather like in San Francisco?",
+                "thought": null,
+                "thought_signature": null,
+                "video_metadata": null,
+                "tool_call": null,
+                "tool_response": null,
+                "part_metadata": null
+              }
+            ],
+            "role": "user"
+          },
+          "responses": [
+            {
+              "response": {
+                "parts": [
+                  {
+                    "media_resolution": null,
+                    "code_execution_result": null,
+                    "executable_code": null,
+                    "file_data": null,
+                    "function_call": null,
+                    "function_response": null,
+                    "inline_data": null,
+                    "text": "I'm sorry, but I don't have access to real-time weather information or tools to check the current weather in San Francisco. \n\nAs a specialized biomedical data science assistant, I can help you analyze Parkinson's disease datasets, evaluate machine learning models (like Random Forest, SVM, or XGBoost) on vocal features, retrieve patient history, or run clinical predictions and explanations based on vocal metrics (such as Jitter, Shimmer, and PPE). \n\nIf you have any questions or data you'd like to analyze regarding Parkinson's disease detection, please let me know!",
+                    "thought": null,
+                    "thought_signature": null,
+                    "video_metadata": null,
+                    "tool_call": null,
+                    "tool_response": null,
+                    "part_metadata": null
+                  }
+                ],
+                "role": "model"
+              }
+            }
+          ],
+          "reference": null,
+          "system_instruction": null,
+          "conversation_history": null,
+          "rubric_groups": null,
+          "eval_case_id": "weather_query",
+          "intermediate_events": null,
+          "agent_info": null,
+          "agent_data": {
+            "agents": {
+              "parkinsons_analytics_agent": {
+                "agent_id": "parkinsons_analytics_agent",
+                "agent_type": "LlmAgent",
+                "description": "",
+                "instruction": "You are a specialized biomedical data scientist agent. Your objective is to assist in analyzing the local vocal/clinical datasets located in './data/' to isolate parameters for detecting Parkinson's Disease.\n1. Always invoke the inspect_dataset_schema tool to review structural schemas when asked to summarize datasets.\n2. When assessing a patient session, FIRST use retrieve_patient_history to check for past records.\n3. Use validate_vocal_features to ensure the incoming vocal metrics are physically possible.\n4. Finally, use clinical_prediction_and_explanation to generate a probability of affection and translate the vocal metrics (like PPE, Jitter, Shimmer) into a plain English clinical reasoning.",
+                "tools": [
+                  {
+                    "retrieval": null,
+                    "computer_use": null,
+                    "file_search": null,
+                    "google_search": null,
+                    "google_maps": null,
+                    "code_execution": null,
+                    "enterprise_web_search": null,
+                    "function_declarations": [
+                      {
+                        "description": "Reads a dataset from the local ./data directory and returns its rows, columns, and a sneak peek.\n\nArgs:\n    filename: The exact name of the file to inspect (e.g., 'Parkinsson disease.csv' or 'parkinsons.data').",
+                        "name": "inspect_dataset_schema",
+                        "parameters": {
+                          "additional_properties": null,
+                          "defs": null,
+                          "ref": null,
+                          "any_of": null,
+                          "default": null,
+                          "description": null,
+                          "enum": null,
+                          "example": null,
+                          "format": null,
+                          "items": null,
+                          "max_items": null,
+                          "max_length": null,
+                          "max_properties": null,
+                          "maximum": null,
+                          "min_items": null,
+                          "min_length": null,
+                          "min_properties": null,
+                          "minimum": null,
+                          "nullable": null,
+                          "pattern": null,
+                          "properties": {
+                            "filename": {
+                              "additional_properties": null,
+                              "defs": null,
+                              "ref": null,
+                              "any_of": null,
+                              "default": null,
+                              "description": null,
+                              "enum": null,
+                              "example": null,
+                              "format": null,
+                              "items": null,
+                              "max_items": null,
+                              "max_length": null,
+                              "max_properties": null,
+                              "maximum": null,
+                              "min_items": null,
+                              "min_length": null,
+                              "min_properties": null,
+                              "minimum": null,
+                              "nullable": null,
+                              "pattern": null,
+                              "properties": null,
+                              "property_ordering": null,
+                              "required": null,
+                              "title": null,
+                              "type": "STRING"
+                            }
+                          },
+                          "property_ordering": null,
+                          "required": [
+                            "filename"
+                          ],
+                          "title": null,
+                          "type": "OBJECT"
+                        },
+                        "parameters_json_schema": null,
+                        "response": null,
+                        "response_json_schema": null,
+                        "behavior": null
+                      }
+                    ],
+                    "google_search_retrieval": null,
+                    "parallel_ai_search": null,
+                    "url_context": null,
+                    "mcp_servers": null
+                  },
+                  {
+                    "retrieval": null,
+                    "computer_use": null,
+                    "file_search": null,
+                    "google_search": null,
+                    "google_maps": null,
+                    "code_execution": null,
+                    "enterprise_web_search": null,
+                    "function_declarations": [
+                      {
+                        "description": "Trains a machine learning model on the chosen Parkinson's dataset and returns performance metrics.\n\nArgs:\n    filename: The name of the file to train on ('Parkinsson disease.csv' or 'parkinsons.data').\n    model_type: The type of model to train ('random_forest', 'svm', or 'xgboost').",
+                        "name": "train_and_evaluate_model",
+                        "parameters": {
+                          "additional_properties": null,
+                          "defs": null,
+                          "ref": null,
+                          "any_of": null,
+                          "default": null,
+                          "description": null,
+                          "enum": null,
+                          "example": null,
+                          "format": null,
+                          "items": null,
+                          "max_items": null,
+                          "max_length": null,
+                          "max_properties": null,
+                          "maximum": null,
+                          "min_items": null,
+                          "min_length": null,
+                          "min_properties": null,
+                          "minimum": null,
+                          "nullable": null,
+                          "pattern": null,
+                          "properties": {
+                            "filename": {
+                              "additional_properties": null,
+                              "defs": null,
+                              "ref": null,
+                              "any_of": null,
+                              "default": null,
+                              "description": null,
+                              "enum": null,
+                              "example": null,
+                              "format": null,
+                              "items": null,
+                              "max_items": null,
+                              "max_length": null,
+                              "max_properties": null,
+                              "maximum": null,
+                              "min_items": null,
+                              "min_length": null,
+                              "min_properties": null,
+                              "minimum": null,
+                              "nullable": null,
+                              "pattern": null,
+                              "properties": null,
+                              "property_ordering": null,
+                              "required": null,
+                              "title": null,
+                              "type": "STRING"
+                            },
+                            "model_type": {
+                              "additional_properties": null,
+                              "defs": null,
+                              "ref": null,
+                              "any_of": null,
+                              "default": "random_forest",
+                              "description": null,
+                              "enum": null,
+                              "example": null,
+                              "format": null,
+                              "items": null,
+                              "max_items": null,
+                              "max_length": null,
+                              "max_properties": null,
+                              "maximum": null,
+                              "min_items": null,
+                              "min_length": null,
+                              "min_properties": null,
+                              "minimum": null,
+                              "nullable": null,
+                              "pattern": null,
+                              "properties": null,
+                              "property_ordering": null,
+                              "required": null,
+                              "title": null,
+                              "type": "STRING"
+                            }
+                          },
+                          "property_ordering": null,
+                          "required": [
+                            "filename"
+                          ],
+                          "title": null,
+                          "type": "OBJECT"
+                        },
+                        "parameters_json_schema": null,
+                        "response": null,
+                        "response_json_schema": null,
+                        "behavior": null
+                      }
+                    ],
+                    "google_search_retrieval": null,
+                    "parallel_ai_search": null,
+                    "url_context": null,
+                    "mcp_servers": null
+                  },
+                  {
+                    "retrieval": null,
+                    "computer_use": null,
+                    "file_search": null,
+                    "google_search": null,
+                    "google_maps": null,
+                    "code_execution": null,
+                    "enterprise_web_search": null,
+                    "function_declarations": [
+                      {
+                        "description": "Performs Stratified 5-Fold Cross-Validation on a model and returns metrics and top 5 features.\n\nArgs:\n    filename: The name of the file to train on ('Parkinsson disease.csv' or 'parkinsons.data').\n    model_type: The type of model to train ('random_forest', 'svm', or 'xgboost').",
+                        "name": "cross_validate_and_feature_importance",
+                        "parameters": {
+                          "additional_properties": null,
+                          "defs": null,
+                          "ref": null,
+                          "any_of": null,
+                          "default": null,
+                          "description": null,
+                          "enum": null,
+                          "example": null,
+                          "format": null,
+                          "items": null,
+                          "max_items": null,
+                          "max_length": null,
+                          "max_properties": null,
+                          "maximum": null,
+                          "min_items": null,
+                          "min_length": null,
+                          "min_properties": null,
+                          "minimum": null,
+                          "nullable": null,
+                          "pattern": null,
+                          "properties": {
+                            "filename": {
+                              "additional_properties": null,
+                              "defs": null,
+                              "ref": null,
+                              "any_of": null,
+                              "default": null,
+                              "description": null,
+                              "enum": null,
+                              "example": null,
+                              "format": null,
+                              "items": null,
+                              "max_items": null,
+                              "max_length": null,
+                              "max_properties": null,
+                              "maximum": null,
+                              "min_items": null,
+                              "min_length": null,
+                              "min_properties": null,
+                              "minimum": null,
+                              "nullable": null,
+                              "pattern": null,
+                              "properties": null,
+                              "property_ordering": null,
+                              "required": null,
+                              "title": null,
+                              "type": "STRING"
+                            },
+                            "model_type": {
+                              "additional_properties": null,
+                              "defs": null,
+                              "ref": null,
+                              "any_of": null,
+                              "default": "random_forest",
+                              "description": null,
+                              "enum": null,
+                              "example": null,
+                              "format": null,
+                              "items": null,
+                              "max_items": null,
+                              "max_length": null,
+                              "max_properties": null,
+                              "maximum": null,
+                              "min_items": null,
+                              "min_length": null,
+                              "min_properties": null,
+                              "minimum": null,
+                              "nullable": null,
+                              "pattern": null,
+                              "properties": null,
+                              "property_ordering": null,
+                              "required": null,
+                              "title": null,
+                              "type": "STRING"
+                            }
+                          },
+                          "property_ordering": null,
+                          "required": [
+                            "filename"
+                          ],
+                          "title": null,
+                          "type": "OBJECT"
+                        },
+                        "parameters_json_schema": null,
+                        "response": null,
+                        "response_json_schema": null,
+                        "behavior": null
+                      }
+                    ],
+                    "google_search_retrieval": null,
+                    "parallel_ai_search": null,
+                    "url_context": null,
+                    "mcp_servers": null
+                  },
+                  {
+                    "retrieval": null,
+                    "computer_use": null,
+                    "file_search": null,
+                    "google_search": null,
+                    "google_maps": null,
+                    "code_execution": null,
+                    "enterprise_web_search": null,
+                    "function_declarations": [
+                      {
+                        "description": "Saves a Markdown diagnostic report containing model metrics and top features to the project root.\n\nArgs:\n    report_content: The formatted Markdown content comparing the models and their top features.",
+                        "name": "generate_diagnostic_report",
+                        "parameters": {
+                          "additional_properties": null,
+                          "defs": null,
+                          "ref": null,
+                          "any_of": null,
+                          "default": null,
+                          "description": null,
+                          "enum": null,
+                          "example": null,
+                          "format": null,
+                          "items": null,
+                          "max_items": null,
+                          "max_length": null,
+                          "max_properties": null,
+                          "maximum": null,
+                          "min_items": null,
+                          "min_length": null,
+                          "min_properties": null,
+                          "minimum": null,
+                          "nullable": null,
+                          "pattern": null,
+                          "properties": {
+                            "report_content": {
+                              "additional_properties": null,
+                              "defs": null,
+                              "ref": null,
+                              "any_of": null,
+                              "default": null,
+                              "description": null,
+                              "enum": null,
+                              "example": null,
+                              "format": null,
+                              "items": null,
+                              "max_items": null,
+                              "max_length": null,
+                              "max_properties": null,
+                              "maximum": null,
+                              "min_items": null,
+                              "min_length": null,
+                              "min_properties": null,
+                              "minimum": null,
+                              "nullable": null,
+                              "pattern": null,
+                              "properties": null,
+                              "property_ordering": null,
+                              "required": null,
+                              "title": null,
+                              "type": "STRING"
+                            }
+                          },
+                          "property_ordering": null,
+                          "required": [
+                            "report_content"
+                          ],
+                          "title": null,
+                          "type": "OBJECT"
+                        },
+                        "parameters_json_schema": null,
+                        "response": null,
+                        "response_json_schema": null,
+                        "behavior": null
+                      }
+                    ],
+                    "google_search_retrieval": null,
+                    "parallel_ai_search": null,
+                    "url_context": null,
+                    "mcp_servers": null
+                  },
+                  {
+                    "retrieval": null,
+                    "computer_use": null,
+                    "file_search": null,
+                    "google_search": null,
+                    "google_maps": null,
+                    "code_execution": null,
+                    "enterprise_web_search": null,
+                    "function_declarations": [
+                      {
+                        "description": "Executes cross-validation on both models, compiles metrics, and saves a clinical-grade markdown report.\n\nArgs:\n    filename: The dataset file to use.",
+                        "name": "generate_clinical_report",
+                        "parameters": {
+                          "additional_properties": null,
+                          "defs": null,
+                          "ref": null,
+                          "any_of": null,
+                          "default": null,
+                          "description": null,
+                          "enum": null,
+                          "example": null,
+                          "format": null,
+                          "items": null,
+                          "max_items": null,
+                          "max_length": null,
+                          "max_properties": null,
+                          "maximum": null,
+                          "min_items": null,
+                          "min_length": null,
+                          "min_properties": null,
+                          "minimum": null,
+                          "nullable": null,
+                          "pattern": null,
+                          "properties": {
+                            "filename": {
+                              "additional_properties": null,
+                              "defs": null,
+                              "ref": null,
+                              "any_of": null,
+                              "default": "parkinsons.data",
+                              "description": null,
+                              "enum": null,
+                              "example": null,
+                              "format": null,
+                              "items": null,
+                              "max_items": null,
+                              "max_length": null,
+                              "max_properties": null,
+                              "maximum": null,
+                              "min_items": null,
+                              "min_length": null,
+                              "min_properties": null,
+                              "minimum": null,
+                              "nullable": null,
+                              "pattern": null,
+                              "properties": null,
+                              "property_ordering": null,
+                              "required": null,
+                              "title": null,
+                              "type": "STRING"
+                            }
+                          },
+                          "property_ordering": null,
+                          "required": [],
+                          "title": null,
+                          "type": "OBJECT"
+                        },
+                        "parameters_json_schema": null,
+                        "response": null,
+                        "response_json_schema": null,
+                        "behavior": null
+                      }
+                    ],
+                    "google_search_retrieval": null,
+                    "parallel_ai_search": null,
+                    "url_context": null,
+                    "mcp_servers": null
+                  },
+                  {
+                    "retrieval": null,
+                    "computer_use": null,
+                    "file_search": null,
+                    "google_search": null,
+                    "google_maps": null,
+                    "code_execution": null,
+                    "enterprise_web_search": null,
+                    "function_declarations": [
+                      {
+                        "description": "Fetches a patient's historical test sessions from a local JSON database.\n\nArgs:\n    patient_id: The unique identifier for the patient.",
+                        "name": "retrieve_patient_history",
+                        "parameters": {
+                          "additional_properties": null,
+                          "defs": null,
+                          "ref": null,
+                          "any_of": null,
+                          "default": null,
+                          "description": null,
+                          "enum": null,
+                          "example": null,
+                          "format": null,
+                          "items": null,
+                          "max_items": null,
+                          "max_length": null,
+                          "max_properties": null,
+                          "maximum": null,
+                          "min_items": null,
+                          "min_length": null,
+                          "min_properties": null,
+                          "minimum": null,
+                          "nullable": null,
+                          "pattern": null,
+                          "properties": {
+                            "patient_id": {
+                              "additional_properties": null,
+                              "defs": null,
+                              "ref": null,
+                              "any_of": null,
+                              "default": null,
+                              "description": null,
+                              "enum": null,
+                              "example": null,
+                              "format": null,
+                              "items": null,
+                              "max_items": null,
+                              "max_length": null,
+                              "max_properties": null,
+                              "maximum": null,
+                              "min_items": null,
+                              "min_length": null,
+                              "min_properties": null,
+                              "minimum": null,
+                              "nullable": null,
+                              "pattern": null,
+                              "properties": null,
+                              "property_ordering": null,
+                              "required": null,
+                              "title": null,
+                              "type": "STRING"
+                            }
+                          },
+                          "property_ordering": null,
+                          "required": [
+                            "patient_id"
+                          ],
+                          "title": null,
+                          "type": "OBJECT"
+                        },
+                        "parameters_json_schema": null,
+                        "response": null,
+                        "response_json_schema": null,
+                        "behavior": null
+                      }
+                    ],
+                    "google_search_retrieval": null,
+                    "parallel_ai_search": null,
+                    "url_context": null,
+                    "mcp_servers": null
+                  },
+                  {
+                    "retrieval": null,
+                    "computer_use": null,
+                    "file_search": null,
+                    "google_search": null,
+                    "google_maps": null,
+                    "code_execution": null,
+                    "enterprise_web_search": null,
+                    "function_declarations": [
+                      {
+                        "description": "Validates raw vocal feature arrays to prevent model crashes and flag anomalies.\n\nArgs:\n    features: A dictionary containing vocal metric names as keys and their numeric values.",
+                        "name": "validate_vocal_features",
+                        "parameters": {
+                          "additional_properties": null,
+                          "defs": null,
+                          "ref": null,
+                          "any_of": null,
+                          "default": null,
+                          "description": null,
+                          "enum": null,
+                          "example": null,
+                          "format": null,
+                          "items": null,
+                          "max_items": null,
+                          "max_length": null,
+                          "max_properties": null,
+                          "maximum": null,
+                          "min_items": null,
+                          "min_length": null,
+                          "min_properties": null,
+                          "minimum": null,
+                          "nullable": null,
+                          "pattern": null,
+                          "properties": {
+                            "features": {
+                              "additional_properties": null,
+                              "defs": null,
+                              "ref": null,
+                              "any_of": null,
+                              "default": null,
+                              "description": null,
+                              "enum": null,
+                              "example": null,
+                              "format": null,
+                              "items": null,
+                              "max_items": null,
+                              "max_length": null,
+                              "max_properties": null,
+                              "maximum": null,
+                              "min_items": null,
+                              "min_length": null,
+                              "min_properties": null,
+                              "minimum": null,
+                              "nullable": null,
+                              "pattern": null,
+                              "properties": null,
+                              "property_ordering": null,
+                              "required": null,
+                              "title": null,
+                              "type": "OBJECT"
+                            }
+                          },
+                          "property_ordering": null,
+                          "required": [
+                            "features"
+                          ],
+                          "title": null,
+                          "type": "OBJECT"
+                        },
+                        "parameters_json_schema": null,
+                        "response": null,
+                        "response_json_schema": null,
+                        "behavior": null
+                      }
+                    ],
+                    "google_search_retrieval": null,
+                    "parallel_ai_search": null,
+                    "url_context": null,
+                    "mcp_servers": null
+                  },
+                  {
+                    "retrieval": null,
+                    "computer_use": null,
+                    "file_search": null,
+                    "google_search": null,
+                    "google_maps": null,
+                    "code_execution": null,
+                    "enterprise_web_search": null,
+                    "function_declarations": [
+                      {
+                        "description": "Calculates probability score for Parkinson's using SVM and translates metrics to clinical explanations.\n\nArgs:\n    features: A dictionary containing the patient's current vocal metrics.",
+                        "name": "clinical_prediction_and_explanation",
+                        "parameters": {
+                          "additional_properties": null,
+                          "defs": null,
+                          "ref": null,
+                          "any_of": null,
+                          "default": null,
+                          "description": null,
+                          "enum": null,
+                          "example": null,
+                          "format": null,
+                          "items": null,
+                          "max_items": null,
+                          "max_length": null,
+                          "max_properties": null,
+                          "maximum": null,
+                          "min_items": null,
+                          "min_length": null,
+                          "min_properties": null,
+                          "minimum": null,
+                          "nullable": null,
+                          "pattern": null,
+                          "properties": {
+                            "features": {
+                              "additional_properties": null,
+                              "defs": null,
+                              "ref": null,
+                              "any_of": null,
+                              "default": null,
+                              "description": null,
+                              "enum": null,
+                              "example": null,
+                              "format": null,
+                              "items": null,
+                              "max_items": null,
+                              "max_length": null,
+                              "max_properties": null,
+                              "maximum": null,
+                              "min_items": null,
+                              "min_length": null,
+                              "min_properties": null,
+                              "minimum": null,
+                              "nullable": null,
+                              "pattern": null,
+                              "properties": null,
+                              "property_ordering": null,
+                              "required": null,
+                              "title": null,
+                              "type": "OBJECT"
+                            }
+                          },
+                          "property_ordering": null,
+                          "required": [
+                            "features"
+                          ],
+                          "title": null,
+                          "type": "OBJECT"
+                        },
+                        "parameters_json_schema": null,
+                        "response": null,
+                        "response_json_schema": null,
+                        "behavior": null
+                      }
+                    ],
+                    "google_search_retrieval": null,
+                    "parallel_ai_search": null,
+                    "url_context": null,
+                    "mcp_servers": null
+                  }
+                ],
+                "sub_agents": []
+              }
+            },
+            "turns": [
+              {
+                "turn_index": 0,
+                "turn_id": "turn_0",
+                "events": [
+                  {
+                    "author": "parkinsons_analytics_agent",
+                    "content": {
+                      "parts": [
+                        {
+                          "media_resolution": null,
+                          "code_execution_result": null,
+                          "executable_code": null,
+                          "file_data": null,
+                          "function_call": null,
+                          "function_response": null,
+                          "inline_data": null,
+                          "text": "I'm sorry, but I don't have access to real-time weather information or tools to check the current weather in San Francisco. \n\nAs a specialized biomedical data science assistant, I can help you analyze Parkinson's disease datasets, evaluate machine learning models (like Random Forest, SVM, or XGBoost) on vocal features, retrieve patient history, or run clinical predictions and explanations based on vocal metrics (such as Jitter, Shimmer, and PPE). \n\nIf you have any questions or data you'd like to analyze regarding Parkinson's disease detection, please let me know!",
+                          "thought": null,
+                          "thought_signature": null,
+                          "video_metadata": null,
+                          "tool_call": null,
+                          "tool_response": null,
+                          "part_metadata": null
+                        }
+                      ],
+                      "role": "model"
+                    },
+                    "event_time": null,
+                    "state_delta": null,
+                    "active_tools": null
+                  }
+                ]
+              }
+            ]
+          },
+          "user_scenario": null
+        }
+      ],
+      "eval_dataset_df": null,
+      "candidate_name": null
+    }
+  ],
+  "metadata": {
+    "candidate_names": [
+      "candidate_1"
+    ],
+    "dataset_name": null,
+    "dataset_id": null,
+    "creation_timestamp": "2026-07-05T13:39:17.766881Z",
+    "dataset": [
+      {
+        "prompt_display_text": "Hello, what can you help me with?",
+        "prompt_raw_json": "{\n  \"parts\": [\n    {\n      \"text\": \"Hello, what can you help me with?\"\n    }\n  ],\n  \"role\": \"user\"\n}",
+        "reference": "",
+        "reference_raw_json": "",
+        "response_display_text": "Hello! I am **parkinsons_analytics_agent**, a specialized biomedical data scientist agent. I am designed to assist you in analyzing vocal and clinical datasets to detect and track Parkinson's Disease. \n\nHere is what I can help you with:\n\n1. **Dataset Analysis & Schema Inspection**: \n   * Reviewing structures and features of Parkinson's datasets (e.g., `parkinsons.data` or `Parkinsson disease.csv`).\n   * Identifying key biomarkers, vocal features, and clinical parameters.\n\n2. **Model Training, Evaluation & Feature Importance**:\n   * Training Machine Learning models (such as Random Forest, SVM, or XGBoost) on Parkinson's datasets.\n   * Performing Stratified 5-Fold Cross-Validation to assess performance metrics (accuracy, precision, recall, F1-score).\n   * Identifying the most predictive vocal metrics (e.g., Jitter, Shimmer, PPE, HNR).\n\n3. **Clinical Patient Assessment & History Tracking**:\n   * Retrieving a patient's historical test sessions to monitor disease progression.\n   * Validating raw patient vocal feature metrics to ensure physiological plausibility and flag anomalies.\n   * Running clinical predictions (probability of Parkinson's Disease) and translating complex acoustic metrics into plain English clinical explanations.\n\n4. **Report Generation**:\n   * Compiling diagnostic and clinical-grade reports in Markdown format comparing model performances and key biomarker insights.\n\nHow can I assist you with your biomedical data analysis or patient assessment today?",
+        "response_raw_json": "{\n  \"parts\": [\n    {\n      \"text\": \"Hello! I am **parkinsons_analytics_agent**, a specialized biomedical data scientist agent. I am designed to assist you in analyzing vocal and clinical datasets to detect and track Parkinson's Disease. \\n\\nHere is what I can help you with:\\n\\n1. **Dataset Analysis & Schema Inspection**: \\n   * Reviewing structures and features of Parkinson's datasets (e.g., `parkinsons.data` or `Parkinsson disease.csv`).\\n   * Identifying key biomarkers, vocal features, and clinical parameters.\\n\\n2. **Model Training, Evaluation & Feature Importance**:\\n   * Training Machine Learning models (such as Random Forest, SVM, or XGBoost) on Parkinson's datasets.\\n   * Performing Stratified 5-Fold Cross-Validation to assess performance metrics (accuracy, precision, recall, F1-score).\\n   * Identifying the most predictive vocal metrics (e.g., Jitter, Shimmer, PPE, HNR).\\n\\n3. **Clinical Patient Assessment & History Tracking**:\\n   * Retrieving a patient's historical test sessions to monitor disease progression.\\n   * Validating raw patient vocal feature metrics to ensure physiological plausibility and flag anomalies.\\n   * Running clinical predictions (probability of Parkinson's Disease) and translating complex acoustic metrics into plain English clinical explanations.\\n\\n4. **Report Generation**:\\n   * Compiling diagnostic and clinical-grade reports in Markdown format comparing model performances and key biomarker insights.\\n\\nHow can I assist you with your biomedical data analysis or patient assessment today?\"\n    }\n  ],\n  \"role\": \"model\"\n}",
+        "intermediate_events": null,
+        "agent_data": "{\"agents\": {\"parkinsons_analytics_agent\": {\"agent_id\": \"parkinsons_analytics_agent\", \"agent_type\": \"LlmAgent\", \"description\": \"\", \"instruction\": \"You are a specialized biomedical data scientist agent. Your objective is to assist in analyzing the local vocal/clinical datasets located in './data/' to isolate parameters for detecting Parkinson's Disease.\\n1. Always invoke the inspect_dataset_schema tool to review structural schemas when asked to summarize datasets.\\n2. When assessing a patient session, FIRST use retrieve_patient_history to check for past records.\\n3. Use validate_vocal_features to ensure the incoming vocal metrics are physically possible.\\n4. Finally, use clinical_prediction_and_explanation to generate a probability of affection and translate the vocal metrics (like PPE, Jitter, Shimmer) into a plain English clinical reasoning.\", \"tools\": [{\"function_declarations\": [{\"description\": \"Reads a dataset from the local ./data directory and returns its rows, columns, and a sneak peek.\\n\\nArgs:\\n    filename: The exact name of the file to inspect (e.g., 'Parkinsson disease.csv' or 'parkinsons.data').\", \"name\": \"inspect_dataset_schema\", \"parameters\": {\"properties\": {\"filename\": {\"type\": \"STRING\"}}, \"required\": [\"filename\"], \"type\": \"OBJECT\"}}]}, {\"function_declarations\": [{\"description\": \"Trains a machine learning model on the chosen Parkinson's dataset and returns performance metrics.\\n\\nArgs:\\n    filename: The name of the file to train on ('Parkinsson disease.csv' or 'parkinsons.data').\\n    model_type: The type of model to train ('random_forest', 'svm', or 'xgboost').\", \"name\": \"train_and_evaluate_model\", \"parameters\": {\"properties\": {\"filename\": {\"type\": \"STRING\"}, \"model_type\": {\"default\": \"random_forest\", \"type\": \"STRING\"}}, \"required\": [\"filename\"], \"type\": \"OBJECT\"}}]}, {\"function_declarations\": [{\"description\": \"Performs Stratified 5-Fold Cross-Validation on a model and returns metrics and top 5 features.\\n\\nArgs:\\n    filename: The name of the file to train on ('Parkinsson disease.csv' or 'parkinsons.data').\\n    model_type: The type of model to train ('random_forest', 'svm', or 'xgboost').\", \"name\": \"cross_validate_and_feature_importance\", \"parameters\": {\"properties\": {\"filename\": {\"type\": \"STRING\"}, \"model_type\": {\"default\": \"random_forest\", \"type\": \"STRING\"}}, \"required\": [\"filename\"], \"type\": \"OBJECT\"}}]}, {\"function_declarations\": [{\"description\": \"Saves a Markdown diagnostic report containing model metrics and top features to the project root.\\n\\nArgs:\\n    report_content: The formatted Markdown content comparing the models and their top features.\", \"name\": \"generate_diagnostic_report\", \"parameters\": {\"properties\": {\"report_content\": {\"type\": \"STRING\"}}, \"required\": [\"report_content\"], \"type\": \"OBJECT\"}}]}, {\"function_declarations\": [{\"description\": \"Executes cross-validation on both models, compiles metrics, and saves a clinical-grade markdown report.\\n\\nArgs:\\n    filename: The dataset file to use.\", \"name\": \"generate_clinical_report\", \"parameters\": {\"properties\": {\"filename\": {\"default\": \"parkinsons.data\", \"type\": \"STRING\"}}, \"required\": [], \"type\": \"OBJECT\"}}]}, {\"function_declarations\": [{\"description\": \"Fetches a patient's historical test sessions from a local JSON database.\\n\\nArgs:\\n    patient_id: The unique identifier for the patient.\", \"name\": \"retrieve_patient_history\", \"parameters\": {\"properties\": {\"patient_id\": {\"type\": \"STRING\"}}, \"required\": [\"patient_id\"], \"type\": \"OBJECT\"}}]}, {\"function_declarations\": [{\"description\": \"Validates raw vocal feature arrays to prevent model crashes and flag anomalies.\\n\\nArgs:\\n    features: A dictionary containing vocal metric names as keys and their numeric values.\", \"name\": \"validate_vocal_features\", \"parameters\": {\"properties\": {\"features\": {\"type\": \"OBJECT\"}}, \"required\": [\"features\"], \"type\": \"OBJECT\"}}]}, {\"function_declarations\": [{\"description\": \"Calculates probability score for Parkinson's using SVM and translates metrics to clinical explanations.\\n\\nArgs:\\n    features: A dictionary containing the patient's current vocal metrics.\", \"name\": \"clinical_prediction_and_explanation\", \"parameters\": {\"properties\": {\"features\": {\"type\": \"OBJECT\"}}, \"required\": [\"features\"], \"type\": \"OBJECT\"}}]}], \"sub_agents\": []}}, \"turns\": [{\"turn_index\": 0, \"turn_id\": \"turn_0\", \"events\": [{\"author\": \"parkinsons_analytics_agent\", \"content\": {\"parts\": [{\"text\": \"Hello! I am **parkinsons_analytics_agent**, a specialized biomedical data scientist agent. I am designed to assist you in analyzing vocal and clinical datasets to detect and track Parkinson's Disease. \\n\\nHere is what I can help you with:\\n\\n1. **Dataset Analysis & Schema Inspection**: \\n   * Reviewing structures and features of Parkinson's datasets (e.g., `parkinsons.data` or `Parkinsson disease.csv`).\\n   * Identifying key biomarkers, vocal features, and clinical parameters.\\n\\n2. **Model Training, Evaluation & Feature Importance**:\\n   * Training Machine Learning models (such as Random Forest, SVM, or XGBoost) on Parkinson's datasets.\\n   * Performing Stratified 5-Fold Cross-Validation to assess performance metrics (accuracy, precision, recall, F1-score).\\n   * Identifying the most predictive vocal metrics (e.g., Jitter, Shimmer, PPE, HNR).\\n\\n3. **Clinical Patient Assessment & History Tracking**:\\n   * Retrieving a patient's historical test sessions to monitor disease progression.\\n   * Validating raw patient vocal feature metrics to ensure physiological plausibility and flag anomalies.\\n   * Running clinical predictions (probability of Parkinson's Disease) and translating complex acoustic metrics into plain English clinical explanations.\\n\\n4. **Report Generation**:\\n   * Compiling diagnostic and clinical-grade reports in Markdown format comparing model performances and key biomarker insights.\\n\\nHow can I assist you with your biomedical data analysis or patient assessment today?\"}], \"role\": \"model\"}}]}]}"
+      },
+      {
+        "prompt_display_text": "What's the weather like in San Francisco?",
+        "prompt_raw_json": "{\n  \"parts\": [\n    {\n      \"text\": \"What's the weather like in San Francisco?\"\n    }\n  ],\n  \"role\": \"user\"\n}",
+        "reference": "",
+        "reference_raw_json": "",
+        "response_display_text": "I'm sorry, but I don't have access to real-time weather information or tools to check the current weather in San Francisco. \n\nAs a specialized biomedical data science assistant, I can help you analyze Parkinson's disease datasets, evaluate machine learning models (like Random Forest, SVM, or XGBoost) on vocal features, retrieve patient history, or run clinical predictions and explanations based on vocal metrics (such as Jitter, Shimmer, and PPE). \n\nIf you have any questions or data you'd like to analyze regarding Parkinson's disease detection, please let me know!",
+        "response_raw_json": "{\n  \"parts\": [\n    {\n      \"text\": \"I'm sorry, but I don't have access to real-time weather information or tools to check the current weather in San Francisco. \\n\\nAs a specialized biomedical data science assistant, I can help you analyze Parkinson's disease datasets, evaluate machine learning models (like Random Forest, SVM, or XGBoost) on vocal features, retrieve patient history, or run clinical predictions and explanations based on vocal metrics (such as Jitter, Shimmer, and PPE). \\n\\nIf you have any questions or data you'd like to analyze regarding Parkinson's disease detection, please let me know!\"\n    }\n  ],\n  \"role\": \"model\"\n}",
+        "intermediate_events": null,
+        "agent_data": "{\"agents\": {\"parkinsons_analytics_agent\": {\"agent_id\": \"parkinsons_analytics_agent\", \"agent_type\": \"LlmAgent\", \"description\": \"\", \"instruction\": \"You are a specialized biomedical data scientist agent. Your objective is to assist in analyzing the local vocal/clinical datasets located in './data/' to isolate parameters for detecting Parkinson's Disease.\\n1. Always invoke the inspect_dataset_schema tool to review structural schemas when asked to summarize datasets.\\n2. When assessing a patient session, FIRST use retrieve_patient_history to check for past records.\\n3. Use validate_vocal_features to ensure the incoming vocal metrics are physically possible.\\n4. Finally, use clinical_prediction_and_explanation to generate a probability of affection and translate the vocal metrics (like PPE, Jitter, Shimmer) into a plain English clinical reasoning.\", \"tools\": [{\"function_declarations\": [{\"description\": \"Reads a dataset from the local ./data directory and returns its rows, columns, and a sneak peek.\\n\\nArgs:\\n    filename: The exact name of the file to inspect (e.g., 'Parkinsson disease.csv' or 'parkinsons.data').\", \"name\": \"inspect_dataset_schema\", \"parameters\": {\"properties\": {\"filename\": {\"type\": \"STRING\"}}, \"required\": [\"filename\"], \"type\": \"OBJECT\"}}]}, {\"function_declarations\": [{\"description\": \"Trains a machine learning model on the chosen Parkinson's dataset and returns performance metrics.\\n\\nArgs:\\n    filename: The name of the file to train on ('Parkinsson disease.csv' or 'parkinsons.data').\\n    model_type: The type of model to train ('random_forest', 'svm', or 'xgboost').\", \"name\": \"train_and_evaluate_model\", \"parameters\": {\"properties\": {\"filename\": {\"type\": \"STRING\"}, \"model_type\": {\"default\": \"random_forest\", \"type\": \"STRING\"}}, \"required\": [\"filename\"], \"type\": \"OBJECT\"}}]}, {\"function_declarations\": [{\"description\": \"Performs Stratified 5-Fold Cross-Validation on a model and returns metrics and top 5 features.\\n\\nArgs:\\n    filename: The name of the file to train on ('Parkinsson disease.csv' or 'parkinsons.data').\\n    model_type: The type of model to train ('random_forest', 'svm', or 'xgboost').\", \"name\": \"cross_validate_and_feature_importance\", \"parameters\": {\"properties\": {\"filename\": {\"type\": \"STRING\"}, \"model_type\": {\"default\": \"random_forest\", \"type\": \"STRING\"}}, \"required\": [\"filename\"], \"type\": \"OBJECT\"}}]}, {\"function_declarations\": [{\"description\": \"Saves a Markdown diagnostic report containing model metrics and top features to the project root.\\n\\nArgs:\\n    report_content: The formatted Markdown content comparing the models and their top features.\", \"name\": \"generate_diagnostic_report\", \"parameters\": {\"properties\": {\"report_content\": {\"type\": \"STRING\"}}, \"required\": [\"report_content\"], \"type\": \"OBJECT\"}}]}, {\"function_declarations\": [{\"description\": \"Executes cross-validation on both models, compiles metrics, and saves a clinical-grade markdown report.\\n\\nArgs:\\n    filename: The dataset file to use.\", \"name\": \"generate_clinical_report\", \"parameters\": {\"properties\": {\"filename\": {\"default\": \"parkinsons.data\", \"type\": \"STRING\"}}, \"required\": [], \"type\": \"OBJECT\"}}]}, {\"function_declarations\": [{\"description\": \"Fetches a patient's historical test sessions from a local JSON database.\\n\\nArgs:\\n    patient_id: The unique identifier for the patient.\", \"name\": \"retrieve_patient_history\", \"parameters\": {\"properties\": {\"patient_id\": {\"type\": \"STRING\"}}, \"required\": [\"patient_id\"], \"type\": \"OBJECT\"}}]}, {\"function_declarations\": [{\"description\": \"Validates raw vocal feature arrays to prevent model crashes and flag anomalies.\\n\\nArgs:\\n    features: A dictionary containing vocal metric names as keys and their numeric values.\", \"name\": \"validate_vocal_features\", \"parameters\": {\"properties\": {\"features\": {\"type\": \"OBJECT\"}}, \"required\": [\"features\"], \"type\": \"OBJECT\"}}]}, {\"function_declarations\": [{\"description\": \"Calculates probability score for Parkinson's using SVM and translates metrics to clinical explanations.\\n\\nArgs:\\n    features: A dictionary containing the patient's current vocal metrics.\", \"name\": \"clinical_prediction_and_explanation\", \"parameters\": {\"properties\": {\"features\": {\"type\": \"OBJECT\"}}, \"required\": [\"features\"], \"type\": \"OBJECT\"}}]}], \"sub_agents\": []}}, \"turns\": [{\"turn_index\": 0, \"turn_id\": \"turn_0\", \"events\": [{\"author\": \"parkinsons_analytics_agent\", \"content\": {\"parts\": [{\"text\": \"I'm sorry, but I don't have access to real-time weather information or tools to check the current weather in San Francisco. \\n\\nAs a specialized biomedical data science assistant, I can help you analyze Parkinson's disease datasets, evaluate machine learning models (like Random Forest, SVM, or XGBoost) on vocal features, retrieve patient history, or run clinical predictions and explanations based on vocal metrics (such as Jitter, Shimmer, and PPE). \\n\\nIf you have any questions or data you'd like to analyze regarding Parkinson's disease detection, please let me know!\"}], \"role\": \"model\"}}]}]}"
+      }
+    ]
+  },
+  "agent_info": null
+}

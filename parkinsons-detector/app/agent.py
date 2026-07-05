@@ -12,7 +12,7 @@ from google.adk.models import Gemini
 from google.genai import types
 
 # Machine Learning imports for Clinical Explainer
-from sklearn.model_selection import train_test_split, StratifiedKFold
+from sklearn.model_selection import train_test_split, StratifiedKFold, GroupShuffleSplit, GroupKFold
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
@@ -32,6 +32,70 @@ _GLOBAL_MODEL = None
 _GLOBAL_SCALER = None
 _GLOBAL_FEATURES = None
 
+CORE_MAPPINGS = {
+    'ID': 'patient_id',
+    'id': 'patient_id',
+    'name': 'patient_id',
+    'Status': 'status',
+    'class': 'status'
+}
+
+FEATURE_MAPPINGS = {
+    'MDVP:Jitter(%)': 'Jitter_percent',
+    'locPctJitter': 'Jitter_percent',
+    'Jitter_rel': 'Jitter_percent',
+    'MDVP:Shimmer': 'Shimmer_percent',
+    'locShimmer': 'Shimmer_percent',
+    'Shim_loc': 'Shimmer_percent',
+    'MDVP:Fo(Hz)': 'F0_Mean',
+    'MDVP:Fhi(Hz)': 'F0_High',
+    'MDVP:Flo(Hz)': 'F0_Low',
+}
+
+def extract_true_patient_id(raw_id):
+    raw_str = str(raw_id).strip()
+    if raw_str.startswith('phon_R01_'):
+        parts = raw_str.split('_')
+        if len(parts) > 3:
+            return "_".join(parts[:-1])
+    return raw_str
+
+def load_and_harmonize_datasets():
+    import glob
+    import os
+    base_dir = './data'
+    data_files = []
+    for ext in ['csv', 'json', 'names', 'data']:
+        data_files.extend(glob.glob(f'{base_dir}/**/*.{ext}', recursive=True))
+        
+    df_list = []
+    for file in data_files:
+        try:
+            if 'pd_speech_features' in file:
+                df_temp = pd.read_csv(file, header=1, engine='python')
+            elif file.endswith('.json'):
+                df_temp = pd.read_json(file)
+            else:
+                df_temp = pd.read_csv(file, engine='python')
+                
+            df_temp = df_temp.rename(columns=CORE_MAPPINGS)
+            df_temp = df_temp.rename(columns=FEATURE_MAPPINGS)
+            
+            if 'patient_id' not in df_temp.columns or 'status' not in df_temp.columns:
+                continue
+                
+            df_temp['patient_id'] = df_temp['patient_id'].apply(extract_true_patient_id)
+            df_list.append(df_temp)
+        except Exception:
+            continue
+            
+    if not df_list:
+        return None
+        
+    combined_dataset = pd.concat(df_list, ignore_index=True)
+    combined_dataset = combined_dataset.dropna(axis=1)
+    return combined_dataset
+
 def _initialize_clinical_model():
     """Trains the SVM dynamically on initialization to provide real decision distances."""
     global _GLOBAL_MODEL, _GLOBAL_SCALER, _GLOBAL_FEATURES
@@ -39,28 +103,27 @@ def _initialize_clinical_model():
     if _GLOBAL_MODEL is not None:
         return
         
-    full_path = os.path.join(base_data_path, "parkinsons.data")
-    if not os.path.exists(full_path):
-        print("Warning: parkinsons.data not found. Clinical model will not be initialized.")
+    df = load_and_harmonize_datasets()
+    if df is None:
+        print("Warning: No data could be loaded. Clinical model will not be initialized.")
         return
         
-    try:
-        df = pd.read_csv(full_path, engine='python')
-        if 'name' in df.columns:
-            df = df.drop(columns=['name'])
-        
-        X = df.drop(columns=['status'])
-        y = df['status']
-        _GLOBAL_FEATURES = list(X.columns)
-        
-        _GLOBAL_SCALER = StandardScaler()
-        X_scaled = _GLOBAL_SCALER.fit_transform(X)
-        
-        # Train SVM with probability support
-        _GLOBAL_MODEL = SVC(kernel='rbf', probability=True, random_state=42)
-        _GLOBAL_MODEL.fit(X_scaled, y)
-    except Exception as e:
-        print(f"Error initializing clinical model: {e}")
+    numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
+    if 'patient_id' in df.columns:
+        numeric_cols.append('patient_id')
+    df = df[numeric_cols]
+    if 'patient_id' in df.columns:
+        df = df.drop(columns=['patient_id'])
+    
+    X = df.drop(columns=['status'])
+    y = df['status']
+    _GLOBAL_FEATURES = list(X.columns)
+    
+    _GLOBAL_SCALER = StandardScaler()
+    X_scaled = _GLOBAL_SCALER.fit_transform(X)
+    
+    _GLOBAL_MODEL = SVC(kernel='rbf', probability=True, random_state=42)
+    _GLOBAL_MODEL.fit(X_scaled, y)
 
 # Initialize model at module load
 _initialize_clinical_model()
@@ -184,35 +247,25 @@ def retrieve_patient_history(patient_id: str) -> str:
         return f"Error retrieving patient history: {str(e)}"
 
 
-def train_and_evaluate_model(filename: str, model_type: str = "random_forest") -> str:
-    """Trains a machine learning model on the chosen Parkinson's dataset and returns performance metrics.
+def train_and_evaluate_model(model_type: str = "random_forest") -> str:
+    """Trains a machine learning model on the completely harmonized global dataset and returns performance metrics.
 
     Args:
-        filename: The name of the file to train on ('Parkinsson disease.csv' or 'parkinsons.data').
         model_type: The type of model to train ('random_forest', 'svm', or 'xgboost').
     """
-    base_path = "./data"
-    full_path = os.path.join(base_path, filename)
-    
-    if not os.path.exists(full_path):
-        return f"Error: File {filename} not found."
-        
     try:
-        sep = ',' if filename.endswith('.csv') else None
-        df = pd.read_csv(full_path, sep=sep, engine='python')
-        
-        # Clean data: drop identifier string column 'name' if present
-        if 'name' in df.columns:
-            df = df.drop(columns=['name'])
+        df = load_and_harmonize_datasets()
+        if df is None:
+            return "Error: Could not load any valid datasets."
             
-        if 'status' not in df.columns:
-            return "Error: 'status' target column not found in dataset."
-            
-        # Split features and target
-        X = df.drop(columns=['status'])
+        groups = df['patient_id'].values
+        X = df.drop(columns=['status', 'patient_id'])
         y = df['status']
         
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+        gss = GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
+        train_idx, test_idx = next(gss.split(X, y, groups=groups))
+        X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
+        y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
         
         # Scale features due to varying ranges of vocal frequencies
         scaler = StandardScaler()
@@ -278,41 +331,28 @@ def inspect_dataset_schema(filename: str) -> str:
         return f"Error reading file {filename}: {str(e)}"
 
 
-def cross_validate_and_feature_importance(filename: str, model_type: str = "random_forest") -> str:
-    """Performs Stratified 5-Fold Cross-Validation on a model and returns metrics and top 5 features.
+def cross_validate_and_feature_importance(model_type: str = "random_forest") -> str:
+    """Performs Stratified 5-Fold Cross-Validation on a model across the harmonized dataset and returns metrics and top 5 features.
 
     Args:
-        filename: The name of the file to train on ('Parkinsson disease.csv' or 'parkinsons.data').
         model_type: The type of model to train ('random_forest', 'svm', or 'xgboost').
     """
-    base_path = "./data"
-    full_path = os.path.join(base_path, filename)
-    
-    if not os.path.exists(full_path):
-        return f"Error: File {filename} not found."
-        
     try:
-        sep = ',' if filename.endswith('.csv') else None
-        df = pd.read_csv(full_path, sep=sep, engine='python')
-        
-        # Clean data: drop identifier string column 'name' if present
-        if 'name' in df.columns:
-            df = df.drop(columns=['name'])
+        df = load_and_harmonize_datasets()
+        if df is None:
+            return "Error: Could not load any valid datasets."
             
-        if 'status' not in df.columns:
-            return "Error: 'status' target column not found in dataset."
-            
-        # Split features and target
-        X = df.drop(columns=['status'])
+        groups = df['patient_id'].values
+        X = df.drop(columns=['status', 'patient_id'])
         y = df['status']
         
-        skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+        gkf = GroupKFold(n_splits=5)
         
         accuracies = []
         recalls = []
         feature_importances_sum = np.zeros(X.shape[1])
         
-        for train_index, test_index in skf.split(X, y):
+        for train_index, test_index in gkf.split(X, y, groups=groups):
             X_train, X_test = X.iloc[train_index], X.iloc[test_index]
             y_train, y_test = y.iloc[train_index], y.iloc[test_index]
             
@@ -379,18 +419,15 @@ def generate_diagnostic_report(report_content: str) -> str:
         return f"Error generating diagnostic report: {str(e)}"
 
 
-def generate_clinical_report(filename: str = "parkinsons.data") -> str:
+def generate_clinical_report() -> str:
     """Executes cross-validation on both models, compiles metrics, and saves a clinical-grade markdown report.
-    
-    Args:
-        filename: The dataset file to use.
     """
-    rf_results = cross_validate_and_feature_importance(filename, "random_forest")
-    svm_results = cross_validate_and_feature_importance(filename, "svm")
+    rf_results = cross_validate_and_feature_importance("random_forest")
+    svm_results = cross_validate_and_feature_importance("svm")
     
     report = f"""# Clinical Diagnostic Model Evaluation Report
 **Date:** {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
-**Dataset:** {filename}
+**Dataset:** Harmonized Global Dataset
 
 ## Executive Summary
 This report evaluates two machine learning models (Random Forest and Support Vector Machine) for the detection of Parkinson's Disease based on vocal acoustic biomarkers. 

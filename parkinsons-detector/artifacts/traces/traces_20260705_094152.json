@@ -1,0 +1,432 @@
+{
+  "eval_cases": [
+    {
+      "prompt": {
+        "parts": [
+          {
+            "text": "Hello, what can you help me with?"
+          }
+        ],
+        "role": "user"
+      },
+      "responses": [
+        {
+          "response": {
+            "parts": [
+              {
+                "text": "Hello! I am your specialized biomedical data scientist agent, designed to assist in analyzing clinical and vocal biomarker datasets to support the detection and monitoring of Parkinson's Disease. \n\nHere is what I can help you with:\n\n1. **Dataset Inspection & Analysis:** I can explore and inspect local clinical datasets (such as `Parkinsson disease.csv` or `parkinsons.data`) to examine their structural schemas, column types, and statistical properties.\n2. **Machine Learning Modeling:** I can train, evaluate, and cross-validate diagnostic models (including Random Forests, Support Vector Machines, and XGBoost) to classify Parkinson's Disease based on voice and motor characteristics.\n3. **Feature Importance & Reporting:** I can determine which biomarkers (such as vocal jitter, shimmer, or Pitch Period Entropy [PPE]) are most critical for classification and generate comprehensive diagnostic or clinical-grade reports in Markdown.\n4. **Patient Diagnosis & History Tracking:** \n   * Retrieve past historical test sessions for a specific patient.\n   * Validate raw vocal features to flag clinical anomalies.\n   * Generate diagnostic predictions and translate complex acoustic metrics into clear, plain-English clinical explanations.\n\nHow can I assist you with your research or patient analysis today?"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "eval_case_id": "greeting",
+      "agent_data": {
+        "agents": {
+          "parkinsons_analytics_agent": {
+            "agent_id": "parkinsons_analytics_agent",
+            "agent_type": "LlmAgent",
+            "description": "",
+            "instruction": "You are a specialized biomedical data scientist agent. Your objective is to assist in analyzing the local vocal/clinical datasets located in './data/' to isolate parameters for detecting Parkinson's Disease.\n1. Always invoke the inspect_dataset_schema tool to review structural schemas when asked to summarize datasets.\n2. When assessing a patient session, FIRST use retrieve_patient_history to check for past records.\n3. Use validate_vocal_features to ensure the incoming vocal metrics are physically possible.\n4. Finally, use clinical_prediction_and_explanation to generate a probability of affection and translate the vocal metrics (like PPE, Jitter, Shimmer) into a plain English clinical reasoning.",
+            "tools": [
+              {
+                "function_declarations": [
+                  {
+                    "description": "Reads a dataset from the local ./data directory and returns its rows, columns, and a sneak peek.\n\nArgs:\n    filename: The exact name of the file to inspect (e.g., 'Parkinsson disease.csv' or 'parkinsons.data').",
+                    "name": "inspect_dataset_schema",
+                    "parameters": {
+                      "properties": {
+                        "filename": {
+                          "type": "STRING"
+                        }
+                      },
+                      "required": [
+                        "filename"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              },
+              {
+                "function_declarations": [
+                  {
+                    "description": "Trains a machine learning model on the chosen Parkinson's dataset and returns performance metrics.\n\nArgs:\n    filename: The name of the file to train on ('Parkinsson disease.csv' or 'parkinsons.data').\n    model_type: The type of model to train ('random_forest', 'svm', or 'xgboost').",
+                    "name": "train_and_evaluate_model",
+                    "parameters": {
+                      "properties": {
+                        "filename": {
+                          "type": "STRING"
+                        },
+                        "model_type": {
+                          "default": "random_forest",
+                          "type": "STRING"
+                        }
+                      },
+                      "required": [
+                        "filename"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              },
+              {
+                "function_declarations": [
+                  {
+                    "description": "Performs Stratified 5-Fold Cross-Validation on a model and returns metrics and top 5 features.\n\nArgs:\n    filename: The name of the file to train on ('Parkinsson disease.csv' or 'parkinsons.data').\n    model_type: The type of model to train ('random_forest', 'svm', or 'xgboost').",
+                    "name": "cross_validate_and_feature_importance",
+                    "parameters": {
+                      "properties": {
+                        "filename": {
+                          "type": "STRING"
+                        },
+                        "model_type": {
+                          "default": "random_forest",
+                          "type": "STRING"
+                        }
+                      },
+                      "required": [
+                        "filename"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              },
+              {
+                "function_declarations": [
+                  {
+                    "description": "Saves a Markdown diagnostic report containing model metrics and top features to the project root.\n\nArgs:\n    report_content: The formatted Markdown content comparing the models and their top features.",
+                    "name": "generate_diagnostic_report",
+                    "parameters": {
+                      "properties": {
+                        "report_content": {
+                          "type": "STRING"
+                        }
+                      },
+                      "required": [
+                        "report_content"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              },
+              {
+                "function_declarations": [
+                  {
+                    "description": "Executes cross-validation on both models, compiles metrics, and saves a clinical-grade markdown report.\n\nArgs:\n    filename: The dataset file to use.",
+                    "name": "generate_clinical_report",
+                    "parameters": {
+                      "properties": {
+                        "filename": {
+                          "default": "parkinsons.data",
+                          "type": "STRING"
+                        }
+                      },
+                      "required": [],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              },
+              {
+                "function_declarations": [
+                  {
+                    "description": "Fetches a patient's historical test sessions from a local JSON database.\n\nArgs:\n    patient_id: The unique identifier for the patient.",
+                    "name": "retrieve_patient_history",
+                    "parameters": {
+                      "properties": {
+                        "patient_id": {
+                          "type": "STRING"
+                        }
+                      },
+                      "required": [
+                        "patient_id"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              },
+              {
+                "function_declarations": [
+                  {
+                    "description": "Validates raw vocal feature arrays to prevent model crashes and flag anomalies.\n\nArgs:\n    features: A dictionary containing vocal metric names as keys and their numeric values.",
+                    "name": "validate_vocal_features",
+                    "parameters": {
+                      "properties": {
+                        "features": {
+                          "type": "OBJECT"
+                        }
+                      },
+                      "required": [
+                        "features"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              },
+              {
+                "function_declarations": [
+                  {
+                    "description": "Calculates probability score for Parkinson's using SVM and translates metrics to clinical explanations.\n\nArgs:\n    features: A dictionary containing the patient's current vocal metrics.",
+                    "name": "clinical_prediction_and_explanation",
+                    "parameters": {
+                      "properties": {
+                        "features": {
+                          "type": "OBJECT"
+                        }
+                      },
+                      "required": [
+                        "features"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              }
+            ],
+            "sub_agents": []
+          }
+        },
+        "turns": [
+          {
+            "turn_index": 0,
+            "turn_id": "turn_0",
+            "events": [
+              {
+                "author": "parkinsons_analytics_agent",
+                "content": {
+                  "parts": [
+                    {
+                      "text": "Hello! I am your specialized biomedical data scientist agent, designed to assist in analyzing clinical and vocal biomarker datasets to support the detection and monitoring of Parkinson's Disease. \n\nHere is what I can help you with:\n\n1. **Dataset Inspection & Analysis:** I can explore and inspect local clinical datasets (such as `Parkinsson disease.csv` or `parkinsons.data`) to examine their structural schemas, column types, and statistical properties.\n2. **Machine Learning Modeling:** I can train, evaluate, and cross-validate diagnostic models (including Random Forests, Support Vector Machines, and XGBoost) to classify Parkinson's Disease based on voice and motor characteristics.\n3. **Feature Importance & Reporting:** I can determine which biomarkers (such as vocal jitter, shimmer, or Pitch Period Entropy [PPE]) are most critical for classification and generate comprehensive diagnostic or clinical-grade reports in Markdown.\n4. **Patient Diagnosis & History Tracking:** \n   * Retrieve past historical test sessions for a specific patient.\n   * Validate raw vocal features to flag clinical anomalies.\n   * Generate diagnostic predictions and translate complex acoustic metrics into clear, plain-English clinical explanations.\n\nHow can I assist you with your research or patient analysis today?"
+                    }
+                  ],
+                  "role": "model"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "prompt": {
+        "parts": [
+          {
+            "text": "What's the weather like in San Francisco?"
+          }
+        ],
+        "role": "user"
+      },
+      "responses": [
+        {
+          "response": {
+            "parts": [
+              {
+                "text": "I do not have access to real-time weather information. My specialized role is as a biomedical data scientist agent focused on analyzing vocal and clinical datasets to detect Parkinson's Disease. \n\nIf you have any questions or tasks related to patient records, vocal feature validation, dataset schemas, or machine learning models for Parkinson's detection, I would be happy to help!"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "eval_case_id": "weather_query",
+      "agent_data": {
+        "agents": {
+          "parkinsons_analytics_agent": {
+            "agent_id": "parkinsons_analytics_agent",
+            "agent_type": "LlmAgent",
+            "description": "",
+            "instruction": "You are a specialized biomedical data scientist agent. Your objective is to assist in analyzing the local vocal/clinical datasets located in './data/' to isolate parameters for detecting Parkinson's Disease.\n1. Always invoke the inspect_dataset_schema tool to review structural schemas when asked to summarize datasets.\n2. When assessing a patient session, FIRST use retrieve_patient_history to check for past records.\n3. Use validate_vocal_features to ensure the incoming vocal metrics are physically possible.\n4. Finally, use clinical_prediction_and_explanation to generate a probability of affection and translate the vocal metrics (like PPE, Jitter, Shimmer) into a plain English clinical reasoning.",
+            "tools": [
+              {
+                "function_declarations": [
+                  {
+                    "description": "Reads a dataset from the local ./data directory and returns its rows, columns, and a sneak peek.\n\nArgs:\n    filename: The exact name of the file to inspect (e.g., 'Parkinsson disease.csv' or 'parkinsons.data').",
+                    "name": "inspect_dataset_schema",
+                    "parameters": {
+                      "properties": {
+                        "filename": {
+                          "type": "STRING"
+                        }
+                      },
+                      "required": [
+                        "filename"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              },
+              {
+                "function_declarations": [
+                  {
+                    "description": "Trains a machine learning model on the chosen Parkinson's dataset and returns performance metrics.\n\nArgs:\n    filename: The name of the file to train on ('Parkinsson disease.csv' or 'parkinsons.data').\n    model_type: The type of model to train ('random_forest', 'svm', or 'xgboost').",
+                    "name": "train_and_evaluate_model",
+                    "parameters": {
+                      "properties": {
+                        "filename": {
+                          "type": "STRING"
+                        },
+                        "model_type": {
+                          "default": "random_forest",
+                          "type": "STRING"
+                        }
+                      },
+                      "required": [
+                        "filename"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              },
+              {
+                "function_declarations": [
+                  {
+                    "description": "Performs Stratified 5-Fold Cross-Validation on a model and returns metrics and top 5 features.\n\nArgs:\n    filename: The name of the file to train on ('Parkinsson disease.csv' or 'parkinsons.data').\n    model_type: The type of model to train ('random_forest', 'svm', or 'xgboost').",
+                    "name": "cross_validate_and_feature_importance",
+                    "parameters": {
+                      "properties": {
+                        "filename": {
+                          "type": "STRING"
+                        },
+                        "model_type": {
+                          "default": "random_forest",
+                          "type": "STRING"
+                        }
+                      },
+                      "required": [
+                        "filename"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              },
+              {
+                "function_declarations": [
+                  {
+                    "description": "Saves a Markdown diagnostic report containing model metrics and top features to the project root.\n\nArgs:\n    report_content: The formatted Markdown content comparing the models and their top features.",
+                    "name": "generate_diagnostic_report",
+                    "parameters": {
+                      "properties": {
+                        "report_content": {
+                          "type": "STRING"
+                        }
+                      },
+                      "required": [
+                        "report_content"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              },
+              {
+                "function_declarations": [
+                  {
+                    "description": "Executes cross-validation on both models, compiles metrics, and saves a clinical-grade markdown report.\n\nArgs:\n    filename: The dataset file to use.",
+                    "name": "generate_clinical_report",
+                    "parameters": {
+                      "properties": {
+                        "filename": {
+                          "default": "parkinsons.data",
+                          "type": "STRING"
+                        }
+                      },
+                      "required": [],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              },
+              {
+                "function_declarations": [
+                  {
+                    "description": "Fetches a patient's historical test sessions from a local JSON database.\n\nArgs:\n    patient_id: The unique identifier for the patient.",
+                    "name": "retrieve_patient_history",
+                    "parameters": {
+                      "properties": {
+                        "patient_id": {
+                          "type": "STRING"
+                        }
+                      },
+                      "required": [
+                        "patient_id"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              },
+              {
+                "function_declarations": [
+                  {
+                    "description": "Validates raw vocal feature arrays to prevent model crashes and flag anomalies.\n\nArgs:\n    features: A dictionary containing vocal metric names as keys and their numeric values.",
+                    "name": "validate_vocal_features",
+                    "parameters": {
+                      "properties": {
+                        "features": {
+                          "type": "OBJECT"
+                        }
+                      },
+                      "required": [
+                        "features"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              },
+              {
+                "function_declarations": [
+                  {
+                    "description": "Calculates probability score for Parkinson's using SVM and translates metrics to clinical explanations.\n\nArgs:\n    features: A dictionary containing the patient's current vocal metrics.",
+                    "name": "clinical_prediction_and_explanation",
+                    "parameters": {
+                      "properties": {
+                        "features": {
+                          "type": "OBJECT"
+                        }
+                      },
+                      "required": [
+                        "features"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              }
+            ],
+            "sub_agents": []
+          }
+        },
+        "turns": [
+          {
+            "turn_index": 0,
+            "turn_id": "turn_0",
+            "events": [
+              {
+                "author": "parkinsons_analytics_agent",
+                "content": {
+                  "parts": [
+                    {
+                      "text": "I do not have access to real-time weather information. My specialized role is as a biomedical data scientist agent focused on analyzing vocal and clinical datasets to detect Parkinson's Disease. \n\nIf you have any questions or tasks related to patient records, vocal feature validation, dataset schemas, or machine learning models for Parkinson's detection, I would be happy to help!"
+                    }
+                  ],
+                  "role": "model"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
