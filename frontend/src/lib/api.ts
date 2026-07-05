@@ -5,7 +5,7 @@
  * (see backend/README.md).
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
 const TOKEN_STORAGE_KEY = "lucent_token";
 
@@ -97,6 +97,9 @@ export interface ScreeningSession {
   label: string;
   model_used: string;
   confidence: number;
+  voice_file_path?: string;
+  voice_url?: string;
+  features?: Record<string, number>;
   clinical_explanation: string;
 }
 
