@@ -36,11 +36,14 @@ uvicorn app.main:app --host 127.0.0.1 --port 5000 --reload
 # Frontend (separate terminal)
 cd frontend
 npm install
-echo "VITE_API_BASE_URL=http://127.0.0.1:5000" > .env
 npm run dev
 ```
 
-Visit `http://localhost:5173`.
+Visit `http://localhost:5173`. The frontend's `.env` is committed with
+`VITE_API_BASE_URL=http://127.0.0.1:5000` already set, so this works with
+zero setup as long as the backend is running on the default port above.
+Only edit `frontend/.env` for a non-default setup (a different port, or a
+deployed backend) -- see [frontend/README.md](frontend/README.md).
 
 ## Known limitations
 

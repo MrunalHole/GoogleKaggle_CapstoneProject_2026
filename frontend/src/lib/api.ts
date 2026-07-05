@@ -1,11 +1,30 @@
 /**
  * API client for the Parkinson's screening backend.
  *
- * Set VITE_API_BASE_URL in a .env file to point at your backend
- * (see backend/README.md).
+ * VITE_API_BASE_URL comes pre-configured in .env for local dev
+ * (http://127.0.0.1:5000). Change it there for a non-default setup
+ * (different port, deployed backend) -- see backend/README.md.
  */
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+
+const UNREACHABLE_MESSAGE =
+  "Couldn't reach the server. Check your connection, or if you're not using the default local setup, verify VITE_API_BASE_URL points at a running backend.";
+
+/**
+ * Wraps fetch() so a real network failure (backend down, wrong port,
+ * unreachable deployed URL) surfaces a clear message instead of the
+ * browser's raw "Failed to fetch" / "NetworkError" text. Responses that
+ * come back at all, even error ones, are untouched -- those keep their
+ * own specific handling per call site.
+ */
+async function apiFetch(url: string, init?: RequestInit): Promise<Response> {
+  try {
+    return await fetch(url, init);
+  } catch {
+    throw new Error(UNREACHABLE_MESSAGE);
+  }
+}
 
 const TOKEN_STORAGE_KEY = "lucent_token";
 
@@ -66,7 +85,7 @@ export async function submitVoiceClip(
   const formData = new FormData();
   formData.append("audio", audioBlob, "clip.webm");
 
-  const res = await fetch(`${API_BASE_URL}/screen/voice`, {
+  const res = await apiFetch(`${API_BASE_URL}/screen/voice`, {
     method: "POST",
     headers: authHeaders(),
     body: formData,
@@ -81,7 +100,7 @@ export async function submitCsvFeatures(
   const formData = new FormData();
   formData.append("file", file);
 
-  const res = await fetch(`${API_BASE_URL}/screen/csv`, {
+  const res = await apiFetch(`${API_BASE_URL}/screen/csv`, {
     method: "POST",
     headers: authHeaders(),
     body: formData,
@@ -104,7 +123,7 @@ export interface ScreeningSession {
 }
 
 export async function getScreeningSessions(): Promise<ScreeningSession[]> {
-  const res = await fetch(`${API_BASE_URL}/sessions?limit=20`, {
+  const res = await apiFetch(`${API_BASE_URL}/sessions?limit=20`, {
     headers: authHeaders(),
   });
   if (!res.ok) throw new Error(`Fetching session history failed (${res.status})`);
@@ -139,7 +158,7 @@ async function parseAuthError(res: Response, fallback: string): Promise<never> {
 }
 
 export async function signup(email: string, password: string): Promise<string> {
-  const res = await fetch(`${API_BASE_URL}/auth/signup`, {
+  const res = await apiFetch(`${API_BASE_URL}/auth/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
@@ -150,7 +169,7 @@ export async function signup(email: string, password: string): Promise<string> {
 }
 
 export async function login(email: string, password: string): Promise<string> {
-  const res = await fetch(`${API_BASE_URL}/auth/login`, {
+  const res = await apiFetch(`${API_BASE_URL}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
@@ -161,7 +180,7 @@ export async function login(email: string, password: string): Promise<string> {
 }
 
 export async function getMe(): Promise<AuthUser> {
-  const res = await fetch(`${API_BASE_URL}/auth/me`, {
+  const res = await apiFetch(`${API_BASE_URL}/auth/me`, {
     headers: authHeaders(),
   });
   if (!res.ok) throw new AuthError(res.status, `Not authenticated (${res.status})`);
@@ -176,7 +195,7 @@ export interface ChatMessage {
 export async function submitAssistantMessage(
   history: ChatMessage[]
 ): Promise<string> {
-  const res = await fetch(`${API_BASE_URL}/assistant/chat`, {
+  const res = await apiFetch(`${API_BASE_URL}/assistant/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ messages: history }),
@@ -191,7 +210,7 @@ export async function submitAttachment(
 ): Promise<{ id: string; filename: string; status: "received" }> {
   const formData = new FormData();
   formData.append("file", file);
-  const res = await fetch(`${API_BASE_URL}/attachments`, {
+  const res = await apiFetch(`${API_BASE_URL}/attachments`, {
     method: "POST",
     body: formData,
   });

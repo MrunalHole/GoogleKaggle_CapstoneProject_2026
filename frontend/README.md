@@ -26,33 +26,33 @@ Three Fiber), and Vite.
 
 ## Getting started
 
-**`VITE_API_BASE_URL` is required — there is no demo/mock mode.** Every API
-call in `src/lib/api.ts` goes to `${VITE_API_BASE_URL}/...`; if it's unset,
-that becomes a relative path, which silently targets Vite's own dev server
-instead of the backend. This fails, but not obviously:
-- `POST` calls (voice recording, CSV upload, attachments) come back as a
-  plain, empty-body **404** with no `content-type` — Vite's dev server, not
-  the backend, since nothing is mounted at that path for non-GET requests.
-- `GET` calls (e.g. dashboard session history) come back as a **200** with
-  Vite's `index.html`, then fail client-side trying to parse it as JSON
-  (`Unexpected token '<'... is not valid JSON` in the console) — no 404 at
-  all for this case, since Vite's SPA fallback intercepts GET requests.
+**There is no demo/mock mode** — every API call in `src/lib/api.ts` goes to
+`${VITE_API_BASE_URL}/...`. `.env` is committed with
+`VITE_API_BASE_URL=http://127.0.0.1:5000` already set, so a fresh clone
+works with zero setup as long as the backend (`../backend`) is running on
+that default port.
 
 ```bash
 npm install
-cp .env.example .env
-# edit .env: VITE_API_BASE_URL=http://127.0.0.1:5000 (or wherever your backend runs)
 npm run dev
 ```
 
 Visit `http://localhost:5173`.
 
+Only edit `.env` for a non-default setup — a backend on a different port,
+or a deployed backend URL (see `.env.example` for the format). If
+`VITE_API_BASE_URL` points somewhere with nothing listening, API calls
+throw a clear "Couldn't reach the server... verify VITE_API_BASE_URL"
+error (via `apiFetch` in `src/lib/api.ts`) instead of a confusing raw
+network error.
+
 ## Connecting the real model backend
 
 The FastAPI backend lives in `../backend` and trains the Random Forest / SVM
 pipeline, extracting real acoustic biomarkers via Praat. Run it — see
-`../backend/README.md` — then point `VITE_API_BASE_URL` (set above) at it.
-It implements:
+`../backend/README.md` — on the default port and it just works; otherwise
+point `VITE_API_BASE_URL` (in `.env`) at wherever it's running. It
+implements:
 - `POST /screen/voice` — multipart form with an `audio` file, returns a `ScreeningResult` (see `src/lib/api.ts`)
 - `POST /screen/csv` — multipart form with a `file` field (CSV of vocal features), same response shape
 - `POST /attachments` — multipart form with a `file` field, for supporting documents
