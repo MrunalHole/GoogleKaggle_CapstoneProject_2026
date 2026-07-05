@@ -232,7 +232,12 @@ export default function DashboardPage() {
           {/* ---------- Screening session history ---------- */}
           <div className="card dashboard-card dashboard-card--wide">
             <h2>Screening session history</h2>
-            {authStatus !== "authenticated" ? (
+            {authStatus === "unreachable" ? (
+              <p className="dashboard-empty">
+                Couldn't verify your session — check your connection and try
+                again. You're still logged in; this hasn't signed you out.
+              </p>
+            ) : authStatus !== "authenticated" ? (
               <div className="dashboard-login-prompt">
                 <p className="dashboard-empty">
                   Log in to see your past screening sessions — anonymous

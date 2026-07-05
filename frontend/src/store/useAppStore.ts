@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { SymptomEntry, MedicationReminder, AuthUser } from "../lib/api";
-import { getToken, setToken, clearToken, getMe } from "../lib/api";
+import { getToken, setToken, clearToken, getMe, AuthError } from "../lib/api";
 
 interface AccessibilityState {
   highContrast: boolean;
@@ -82,10 +82,22 @@ export const useDashboardStore = create<DashboardState>()(
 
 interface AuthState {
   user: AuthUser | null;
-  status: "checking" | "authenticated" | "anonymous";
+  // "unreachable": a token exists and hasn't been rejected, but the most
+  // recent verification attempt failed for some other reason (network
+  // error, misconfigured API URL, 5xx, etc). The token is deliberately
+  // left alone in this state -- only a real 401/403 means it's invalid.
+  status: "checking" | "authenticated" | "anonymous" | "unreachable";
   setSession: (token: string) => Promise<void>;
   checkAuth: () => Promise<void>;
   logout: () => void;
+}
+
+// True only for a genuine "this token is invalid" response. Network errors
+// throw a plain TypeError, and a misconfigured API_BASE_URL hitting Vite's
+// own dev server throws a SyntaxError trying to parse its HTML as JSON --
+// neither means the token itself is bad, so neither should log anyone out.
+function isInvalidTokenError(err: unknown): boolean {
+  return err instanceof AuthError && (err.status === 401 || err.status === 403);
 }
 
 export const useAuthStore = create<AuthState>()((set) => ({
@@ -99,8 +111,8 @@ export const useAuthStore = create<AuthState>()((set) => ({
     try {
       const user = await getMe();
       set({ user, status: "authenticated" });
-    } catch {
-      clearToken();
+    } catch (err) {
+      if (isInvalidTokenError(err)) clearToken();
       set({ user: null, status: "anonymous" });
       throw new Error("Could not verify the new session.");
     }
@@ -117,9 +129,15 @@ export const useAuthStore = create<AuthState>()((set) => ({
     try {
       const user = await getMe();
       set({ user, status: "authenticated" });
-    } catch {
-      clearToken();
-      set({ user: null, status: "anonymous" });
+    } catch (err) {
+      if (isInvalidTokenError(err)) {
+        clearToken();
+        set({ user: null, status: "anonymous" });
+      } else {
+        // Leave the token in place -- this isn't evidence it's invalid,
+        // just that we couldn't check right now.
+        set((s) => ({ ...s, status: "unreachable" }));
+      }
     }
   },
 

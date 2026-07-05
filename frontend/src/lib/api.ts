@@ -114,6 +114,22 @@ export interface AuthUser {
   created_at: string;
 }
 
+/**
+ * Thrown by getMe() when the backend actually answered with a non-2xx
+ * status, carrying that status. Distinguishes "the token is genuinely
+ * invalid" (401/403) from everything else -- a network failure or a
+ * misconfigured API_BASE_URL throws a plain TypeError/SyntaxError instead,
+ * never this, so callers can tell them apart.
+ */
+export class AuthError extends Error {
+  status: number;
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = "AuthError";
+    this.status = status;
+  }
+}
+
 async function parseAuthError(res: Response, fallback: string): Promise<never> {
   const body = await res.json().catch(() => null);
   throw new Error(body?.detail ?? fallback);
@@ -145,7 +161,7 @@ export async function getMe(): Promise<AuthUser> {
   const res = await fetch(`${API_BASE_URL}/auth/me`, {
     headers: authHeaders(),
   });
-  if (!res.ok) throw new Error(`Not authenticated (${res.status})`);
+  if (!res.ok) throw new AuthError(res.status, `Not authenticated (${res.status})`);
   return res.json();
 }
 

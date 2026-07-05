@@ -108,6 +108,20 @@
   white-space: nowrap;
 }
 
+.navbar__auth-unreachable {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--color-warning);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-warning);
+  background: none;
+  white-space: nowrap;
+}
+
 .navbar__mobile-logout {
   text-align: left;
   background: none;

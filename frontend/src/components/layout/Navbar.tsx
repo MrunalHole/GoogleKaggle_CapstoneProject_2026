@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Menu, X, Brain, LogOut } from "lucide-react";
+import { Menu, X, Brain, LogOut, AlertTriangle } from "lucide-react";
 import AccessibilityMenu from "../ui/AccessibilityMenu";
 import { useAuthStore } from "../../store/useAppStore";
 import "./Navbar.css";
@@ -18,7 +18,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
-  const { user, status, logout } = useAuthStore();
+  const { user, status, logout, checkAuth } = useAuthStore();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -66,6 +66,14 @@ export default function Navbar() {
             <NavLink to="/login" className="navbar__auth-login" onClick={() => setOpen(false)}>
               Log in
             </NavLink>
+          ) : status === "unreachable" ? (
+            <button
+              className="navbar__auth-unreachable"
+              onClick={() => checkAuth()}
+              title="Couldn't verify your session, check your connection. Your login hasn't been cleared — click to retry."
+            >
+              <AlertTriangle size={14} /> Couldn't verify session
+            </button>
           ) : null}
           <AccessibilityMenu />
           <button
@@ -99,6 +107,10 @@ export default function Navbar() {
             <NavLink to="/login" className="navbar__mobile-link" onClick={() => setOpen(false)}>
               Log in
             </NavLink>
+          ) : status === "unreachable" ? (
+            <button className="navbar__mobile-link navbar__mobile-logout" onClick={() => checkAuth()}>
+              Couldn't verify session — retry
+            </button>
           ) : null}
         </nav>
       )}
