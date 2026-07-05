@@ -21,7 +21,14 @@ const UNREACHABLE_MESSAGE =
 async function apiFetch(url: string, init?: RequestInit): Promise<Response> {
   try {
     return await fetch(url, init);
-  } catch {
+  } catch (err) {
+    // The user-facing message stays generic, but the real cause (network
+    // failure vs. CORS block vs. something else fetch() itself throws for)
+    // is worth keeping in the console instead of discarding it -- swallowing
+    // it here is exactly what made the checkAuth bug hard to diagnose.
+    const name = err instanceof Error ? err.name : typeof err;
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`apiFetch: fetch() threw for ${url} -- ${name}: ${message}`);
     throw new Error(UNREACHABLE_MESSAGE);
   }
 }
