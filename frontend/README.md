@@ -26,8 +26,22 @@ Three Fiber), and Vite.
 
 ## Getting started
 
+**`VITE_API_BASE_URL` is required — there is no demo/mock mode.** Every API
+call in `src/lib/api.ts` goes to `${VITE_API_BASE_URL}/...`; if it's unset,
+that becomes a relative path, which silently targets Vite's own dev server
+instead of the backend. This fails, but not obviously:
+- `POST` calls (voice recording, CSV upload, attachments) come back as a
+  plain, empty-body **404** with no `content-type` — Vite's dev server, not
+  the backend, since nothing is mounted at that path for non-GET requests.
+- `GET` calls (e.g. dashboard session history) come back as a **200** with
+  Vite's `index.html`, then fail client-side trying to parse it as JSON
+  (`Unexpected token '<'... is not valid JSON` in the console) — no 404 at
+  all for this case, since Vite's SPA fallback intercepts GET requests.
+
 ```bash
 npm install
+cp .env.example .env
+# edit .env: VITE_API_BASE_URL=http://127.0.0.1:5000 (or wherever your backend runs)
 npm run dev
 ```
 
@@ -35,19 +49,14 @@ Visit `http://localhost:5173`.
 
 ## Connecting the real model backend
 
-By default, the Voice Screening page runs in **demo mode** — it returns
-simulated results so the UI is fully clickable without a backend. To
-connect it to the real model (the FastAPI backend in `../backend`, which
-trains the Random Forest / SVM pipeline and extracts real acoustic
-biomarkers via Praat):
-
-1. Copy `.env.example` to `.env`.
-2. Set `VITE_API_BASE_URL` to your backend's base URL (e.g. `http://127.0.0.1:5000`).
-3. Run the backend — see `../backend/README.md`. It implements:
-   - `POST /screen/voice` — multipart form with an `audio` file, returns a `ScreeningResult` (see `src/lib/api.ts`)
-   - `POST /screen/csv` — multipart form with a `file` field (CSV of vocal features), same response shape
-   - `POST /attachments` — multipart form with a `file` field, for supporting documents
-   - `GET /sessions` — past screening sessions, shown on the Dashboard page
+The FastAPI backend lives in `../backend` and trains the Random Forest / SVM
+pipeline, extracting real acoustic biomarkers via Praat. Run it — see
+`../backend/README.md` — then point `VITE_API_BASE_URL` (set above) at it.
+It implements:
+- `POST /screen/voice` — multipart form with an `audio` file, returns a `ScreeningResult` (see `src/lib/api.ts`)
+- `POST /screen/csv` — multipart form with a `file` field (CSV of vocal features), same response shape
+- `POST /attachments` — multipart form with a `file` field, for supporting documents
+- `GET /sessions` — past screening sessions, shown on the Dashboard page
 
 The exact response shape expected by the frontend is documented in
 `src/lib/api.ts` (`ScreeningResult` interface).
