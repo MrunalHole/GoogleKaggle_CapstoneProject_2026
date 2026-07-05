@@ -52,6 +52,14 @@ app.include_router(auth_routes.router)
 UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+# Matches the frontend's Dropzone `accept` list for supporting clinical
+# documents (frontend/src/pages/ScreeningPage.tsx). Audio (.mp3 etc.) is
+# intentionally excluded -- voice has its own dedicated, feature-extracted
+# pathway through /screen/voice; a raw audio attachment here would just be
+# an unprocessed file sitting in storage.
+ALLOWED_ATTACHMENT_EXTENSIONS = {".pdf", ".jpg", ".jpeg", ".png", ".docx", ".txt"}
+MAX_ATTACHMENT_SIZE_BYTES = 10 * 1024 * 1024  # 10 MB
+
 @app.on_event("startup")
 def startup_event():
     """Event handler run when FastAPI starts. Trains/loads SVM & RF models."""
@@ -221,22 +229,50 @@ def assistant_chat(request: AssistantChatRequest):
 def upload_attachment(
     file: UploadFile = File(...)
 ):
-    """Attachment Endpoint. Saves supporting clinical documents locally."""
+    """Attachment Endpoint. Saves supporting clinical documents locally.
+
+    The frontend's Dropzone `accept` attribute is cosmetic -- it only
+    filters the OS file picker and does nothing for drag-and-drop, so the
+    real gate has to be here, checked against the actual bytes received,
+    not a trusted client-side hint.
+    """
+    file_extension = os.path.splitext(file.filename)[1].lower()
+    if file_extension not in ALLOWED_ATTACHMENT_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file type '{file_extension or '(none)'}'. "
+                    f"Allowed types: {', '.join(sorted(ALLOWED_ATTACHMENT_EXTENSIONS))}"
+        )
+
     try:
-        # Save file locally
         unique_id = str(uuid.uuid4())
-        file_extension = os.path.splitext(file.filename)[1]
         unique_filename = f"doc_{unique_id}{file_extension}"
         file_path = os.path.join(UPLOAD_DIR, unique_filename)
-        
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-            
+
+        total_bytes = 0
+        buffer = open(file_path, "wb")
+        try:
+            while chunk := file.file.read(1024 * 1024):
+                total_bytes += len(chunk)
+                if total_bytes > MAX_ATTACHMENT_SIZE_BYTES:
+                    buffer.close()
+                    os.remove(file_path)
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"File exceeds the {MAX_ATTACHMENT_SIZE_BYTES // (1024 * 1024)}MB size limit."
+                    )
+                buffer.write(chunk)
+        finally:
+            if not buffer.closed:
+                buffer.close()
+
         return AttachmentResponse(
             id=unique_id,
             filename=file.filename,
             status="received"
         )
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Error in /attachments: {e}")
         raise HTTPException(status_code=500, detail=f"Attachment upload failed: {str(e)}")

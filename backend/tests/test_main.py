@@ -100,6 +100,30 @@ def test_attachments_upload(client):
         _cleanup_uploads()
 
 
+def test_attachments_rejects_unsupported_extension(client):
+    try:
+        files = {"file": ("voice_note.mp3", b"fake mp3 bytes", "audio/mpeg")}
+        res = client.post("/attachments", files=files)
+        assert res.status_code == 400
+        assert ".mp3" in res.json()["detail"]
+    finally:
+        _cleanup_uploads()
+
+
+def test_attachments_rejects_oversized_file(client):
+    try:
+        from app.main import MAX_ATTACHMENT_SIZE_BYTES
+        oversized = b"0" * (MAX_ATTACHMENT_SIZE_BYTES + 1)
+        files = {"file": ("scan.pdf", oversized, "application/pdf")}
+        res = client.post("/attachments", files=files)
+        assert res.status_code == 400
+        assert "size limit" in res.json()["detail"]
+        # confirm no partial file was left on disk
+        assert glob.glob(os.path.join(UPLOAD_DIR, "*.pdf")) == []
+    finally:
+        _cleanup_uploads()
+
+
 def test_assistant_chat_without_api_key_falls_back(client, monkeypatch):
     # Force the no-key path regardless of the developer's local .env, so this
     # test stays deterministic and never makes a real Gemini API call.
