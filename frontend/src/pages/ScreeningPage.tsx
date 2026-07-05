@@ -118,12 +118,18 @@ export default function ScreeningPage() {
               {tab === "attachments" && (
                 <div className="screening-attachments">
                   <Dropzone
-                    accept=".pdf,.jpg,.jpeg,.png,.docx,.txt"
+                    accept=".pdf,.jpg,.jpeg,.png,.docx,.txt,.mp3"
                     label="Add supporting documents"
                     hint="Clinical notes, prior test results, or other relevant files (optional)"
                     icon={<Paperclip size={22} />}
                     onFileSelected={handleAttachment}
                   />
+                  <p className="screening-attachments__note">
+                    Attachments are stored as reference material only —
+                    unlike the Voice Screening tab, nothing here is analyzed.
+                    For a model-driven score from a voice recording, use{" "}
+                    <strong>Record voice</strong> instead.
+                  </p>
                   {attachments.length > 0 && (
                     <ul className="screening-attachments__list">
                       {attachments.map((f, i) => (

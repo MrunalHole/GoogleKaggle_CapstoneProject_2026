@@ -102,10 +102,22 @@ def test_attachments_upload(client):
 
 def test_attachments_rejects_unsupported_extension(client):
     try:
-        files = {"file": ("voice_note.mp3", b"fake mp3 bytes", "audio/mpeg")}
+        files = {"file": ("clip.mov", b"fake video bytes", "video/quicktime")}
         res = client.post("/attachments", files=files)
         assert res.status_code == 400
-        assert ".mp3" in res.json()["detail"]
+        assert ".mov" in res.json()["detail"]
+    finally:
+        _cleanup_uploads()
+
+
+def test_attachments_accepts_mp3_as_reference_material(client):
+    try:
+        files = {"file": ("voice_note.mp3", b"fake mp3 bytes", "audio/mpeg")}
+        res = client.post("/attachments", files=files)
+        assert res.status_code == 200
+        body = res.json()
+        assert body["status"] == "received"
+        assert body["filename"] == "voice_note.mp3"
     finally:
         _cleanup_uploads()
 

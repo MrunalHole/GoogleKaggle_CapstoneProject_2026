@@ -55,6 +55,11 @@
   gap: var(--sp-3);
 }
 
+.screening-attachments__note {
+  font-size: var(--fs-xs);
+  color: var(--color-body);
+}
+
 .screening-attachments__list {
   list-style: none;
   display: flex;

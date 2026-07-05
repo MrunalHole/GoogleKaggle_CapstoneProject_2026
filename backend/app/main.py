@@ -53,11 +53,10 @@ UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # Matches the frontend's Dropzone `accept` list for supporting clinical
-# documents (frontend/src/pages/ScreeningPage.tsx). Audio (.mp3 etc.) is
-# intentionally excluded -- voice has its own dedicated, feature-extracted
-# pathway through /screen/voice; a raw audio attachment here would just be
-# an unprocessed file sitting in storage.
-ALLOWED_ATTACHMENT_EXTENSIONS = {".pdf", ".jpg", ".jpeg", ".png", ".docx", ".txt"}
+# documents (frontend/src/pages/ScreeningPage.tsx). .mp3 is allowed as
+# reference material only -- unlike /screen/voice, this endpoint doesn't
+# run any feature extraction on it; it's just stored as-is.
+ALLOWED_ATTACHMENT_EXTENSIONS = {".pdf", ".jpg", ".jpeg", ".png", ".docx", ".txt", ".mp3"}
 MAX_ATTACHMENT_SIZE_BYTES = 10 * 1024 * 1024  # 10 MB
 
 @app.on_event("startup")
