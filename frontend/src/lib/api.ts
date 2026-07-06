@@ -86,10 +86,14 @@ export interface MedicationReminder {
 }
 
 export async function submitVoiceClip(
-  audioBlob: Blob
+  audioBlob: Blob,
+  attachmentIds?: { id: string; filename: string }[]
 ): Promise<ScreeningResult> {
   const formData = new FormData();
   formData.append("audio", audioBlob, "clip.webm");
+  if (attachmentIds && attachmentIds.length > 0) {
+    formData.append("attachments_json", JSON.stringify(attachmentIds));
+  }
 
   const res = await apiFetch(`${API_BASE_URL}/screen/voice`, {
     method: "POST",
@@ -101,10 +105,14 @@ export async function submitVoiceClip(
 }
 
 export async function submitCsvFeatures(
-  file: File
+  file: File,
+  attachmentIds?: { id: string; filename: string }[]
 ): Promise<ScreeningResult> {
   const formData = new FormData();
   formData.append("file", file);
+  if (attachmentIds && attachmentIds.length > 0) {
+    formData.append("attachments_json", JSON.stringify(attachmentIds));
+  }
 
   const res = await apiFetch(`${API_BASE_URL}/screen/csv`, {
     method: "POST",
@@ -124,6 +132,9 @@ export interface ScreeningSession {
   confidence: number;
   voice_file_path?: string;
   voice_url?: string;
+  csv_file_path?: string;
+  csv_url?: string;
+  attachments?: { id: string; filename: string; url: string }[];
   features?: Record<string, number>;
   clinical_explanation: string;
 }
@@ -134,6 +145,22 @@ export async function getScreeningSessions(): Promise<ScreeningSession[]> {
   });
   if (!res.ok) throw new Error(`Fetching session history failed (${res.status})`);
   return res.json();
+}
+
+export async function deleteScreeningSession(sessionId: string): Promise<void> {
+  const res = await apiFetch(`${API_BASE_URL}/sessions/${sessionId}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error(`Deleting session failed (${res.status})`);
+}
+
+export async function deleteAttachmentApi(attachmentId: string): Promise<void> {
+  const res = await apiFetch(`${API_BASE_URL}/attachments/${attachmentId}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error(`Deleting attachment failed (${res.status})`);
 }
 
 export interface AuthUser {

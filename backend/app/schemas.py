@@ -39,6 +39,9 @@ class SessionDetailResponse(BaseModel):
     confidence: float
     voice_file_path: Optional[str]
     voice_url: Optional[str] = None
+    csv_file_path: Optional[str] = None
+    csv_url: Optional[str] = None
+    attachments: Optional[List[Dict[str, str]]] = None
     features: Dict[str, float]
     clinical_explanation: str
 

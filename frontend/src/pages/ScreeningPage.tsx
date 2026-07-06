@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Mic, FileSpreadsheet, Paperclip, AlertTriangle, Loader2 } from "lucide-react";
+import { Mic, FileSpreadsheet, Paperclip, AlertTriangle, Loader2, Trash2 } from "lucide-react";
 import AudioRecorder from "../components/upload/AudioRecorder";
 import Dropzone from "../components/upload/Dropzone";
 import Button from "../components/ui/Button";
@@ -7,17 +7,23 @@ import {
   submitVoiceClip,
   submitCsvFeatures,
   submitAttachment,
+  deleteAttachmentApi,
   type ScreeningResult,
 } from "../lib/api";
 import "./ScreeningPage.css";
 
 type Tab = "voice" | "csv" | "attachments";
 
+interface UploadedAttachment {
+  id: string;
+  file: File;
+}
+
 export default function ScreeningPage() {
   const [tab, setTab] = useState<Tab>("voice");
   const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
   const [csvFile, setCsvFile] = useState<File | null>(null);
-  const [attachments, setAttachments] = useState<File[]>([]);
+  const [attachments, setAttachments] = useState<UploadedAttachment[]>([]);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScreeningResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -28,10 +34,11 @@ export default function ScreeningPage() {
     setResult(null);
     try {
       let res: ScreeningResult;
+      const attachmentIds = attachments.map((a) => ({ id: a.id, filename: a.file.name }));
       if (tab === "voice" && voiceBlob) {
-        res = await submitVoiceClip(voiceBlob);
+        res = await submitVoiceClip(voiceBlob, attachmentIds);
       } else if (tab === "csv" && csvFile) {
-        res = await submitCsvFeatures(csvFile);
+        res = await submitCsvFeatures(csvFile, attachmentIds);
       } else {
         throw new Error("Add a voice clip or CSV file first.");
       }
@@ -41,14 +48,23 @@ export default function ScreeningPage() {
     } finally {
       setLoading(false);
     }
-  }, [tab, voiceBlob, csvFile]);
+  }, [tab, voiceBlob, csvFile, attachments]);
 
   const handleAttachment = useCallback(async (file: File) => {
-    setAttachments((prev) => [...prev, file]);
     try {
-      await submitAttachment(file);
-    } catch {
-      // Non-blocking: attachments are supplementary, surfaced inline below.
+      const res = await submitAttachment(file);
+      setAttachments((prev) => [...prev, { id: res.id, file }]);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Attachment upload failed.");
+    }
+  }, []);
+
+  const handleDeleteAttachment = useCallback(async (id: string) => {
+    try {
+      await deleteAttachmentApi(id);
+      setAttachments((prev) => prev.filter((a) => a.id !== id));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Deleting attachment failed.");
     }
   }, []);
 
@@ -99,23 +115,23 @@ export default function ScreeningPage() {
             </div>
 
             <div className="screening-tab-panel">
-              {tab === "voice" && <AudioRecorder onClipReady={setVoiceBlob} />}
+              <div style={{ display: tab === "voice" ? "block" : "none", width: "100%" }}>
+                <AudioRecorder onClipReady={setVoiceBlob} />
+              </div>
 
-              {tab === "csv" && (
-                <>
-                  <Dropzone
-                    accept=".csv"
-                    label="Upload a CSV of vocal measurements"
-                    hint="Expects columns like MDVP:Fo(Hz), Jitter, Shimmer, HNR, PPE — same format as the UCI Parkinson's dataset"
-                    icon={<FileSpreadsheet size={22} />}
-                    onFileSelected={setCsvFile}
-                    selectedFileName={csvFile?.name ?? null}
-                    onClear={() => setCsvFile(null)}
-                  />
-                </>
-              )}
+              <div style={{ display: tab === "csv" ? "block" : "none", width: "100%" }}>
+                <Dropzone
+                  accept=".csv"
+                  label="Upload a CSV of vocal measurements"
+                  hint="Expects columns like MDVP:Fo(Hz), Jitter, Shimmer, HNR, PPE — same format as the UCI Parkinson's dataset"
+                  icon={<FileSpreadsheet size={22} />}
+                  onFileSelected={setCsvFile}
+                  selectedFileName={csvFile?.name ?? null}
+                  onClear={() => setCsvFile(null)}
+                />
+              </div>
 
-              {tab === "attachments" && (
+              <div style={{ display: tab === "attachments" ? "block" : "none", width: "100%" }}>
                 <div className="screening-attachments">
                   <Dropzone
                     accept=".pdf,.jpg,.jpeg,.png,.docx,.txt,.mp3"
@@ -132,15 +148,23 @@ export default function ScreeningPage() {
                   </p>
                   {attachments.length > 0 && (
                     <ul className="screening-attachments__list">
-                      {attachments.map((f, i) => (
-                        <li key={i}>
-                          <Paperclip size={14} /> {f.name}
+                      {attachments.map((att) => (
+                        <li key={att.id}>
+                          <Paperclip size={14} /> {att.file.name}
+                          <button
+                            type="button"
+                            className="screening-attachment__delete"
+                            onClick={() => handleDeleteAttachment(att.id)}
+                            aria-label={`Remove ${att.file.name}`}
+                          >
+                            <Trash2 size={14} />
+                          </button>
                         </li>
                       ))}
                     </ul>
                   )}
                 </div>
-              )}
+              </div>
             </div>
 
             {tab !== "attachments" && (

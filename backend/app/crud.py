@@ -3,7 +3,7 @@ from typing import Optional
 from sqlalchemy.orm import Session
 from app.models import SessionRecord, User
 
-def create_session_record(db: Session, risk_score: float, label: str, model_used: str, confidence: float, features: dict, clinical_explanation: str, voice_file_path: str = None, user_id: Optional[UUID] = None) -> SessionRecord:
+def create_session_record(db: Session, risk_score: float, label: str, model_used: str, confidence: float, features: dict, clinical_explanation: str, voice_file_path: str = None, csv_file_path: str = None, attachments: list = None, user_id: Optional[UUID] = None) -> SessionRecord:
     """Inserts a new clinical screening session log into PostgreSQL."""
     db_record = SessionRecord(
         user_id=user_id,
@@ -13,7 +13,9 @@ def create_session_record(db: Session, risk_score: float, label: str, model_used
         confidence=confidence,
         features=features,
         clinical_explanation=clinical_explanation,
-        voice_file_path=voice_file_path
+        voice_file_path=voice_file_path,
+        csv_file_path=csv_file_path,
+        attachments=attachments
     )
     db.add(db_record)
     db.commit()

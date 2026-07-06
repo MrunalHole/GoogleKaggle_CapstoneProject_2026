@@ -24,6 +24,8 @@ class SessionRecord(Base):
     model_used = Column(String(50), nullable=False)  # "random_forest", "svm", etc.
     confidence = Column(Float, nullable=False)
     voice_file_path = Column(String(255), nullable=True)
+    csv_file_path = Column(String(255), nullable=True)
+    attachments = Column(JSON, nullable=True)
     # Using JSONB for PostgreSQL performance and indexing, falling back to standard JSON on SQLite (for tests)
     features = Column(JSON, nullable=False)
     clinical_explanation = Column(Text, nullable=False)

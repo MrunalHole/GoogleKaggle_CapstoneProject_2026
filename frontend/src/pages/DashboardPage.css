@@ -250,6 +250,39 @@
   color: var(--color-body);
 }
 
+.dashboard-session__delete {
+  background: none;
+  border: none;
+  color: var(--color-body);
+  cursor: pointer;
+  padding: 0 var(--sp-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboard-session__delete:hover {
+  color: var(--color-danger);
+}
+
+.dashboard-session__file-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  text-decoration: none;
+  color: var(--color-heading);
+  background: var(--color-bg-sunken);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-xs);
+  border: 1px solid var(--color-border);
+}
+
+.dashboard-session__file-link:hover {
+  background: var(--color-border);
+  color: var(--color-primary-deep);
+}
+
 .dashboard-session__chevron--open {
   transform: rotate(180deg);
 }

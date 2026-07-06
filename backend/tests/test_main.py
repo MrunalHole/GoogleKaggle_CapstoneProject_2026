@@ -46,9 +46,8 @@ def test_screen_csv_valid(client):
     res = client.post("/screen/csv", files=files)
     assert res.status_code == 200
     body = res.json()
-    assert 0.0 <= body["riskScore"] <= 1.0
-    assert body["label"] in {"low-likelihood", "moderate-likelihood", "elevated-likelihood"}
-    assert body["modelUsed"] == "random_forest"
+    assert 0.0 <= body["likelihood_score"] <= 1.0
+    assert "probability" in body["percentage_chance"]
 
 
 def test_screen_csv_empty_rejected(client):
@@ -67,8 +66,7 @@ def test_screen_voice_extracts_real_features(client):
         res = client.post("/screen/voice", files=files, headers=headers)
         assert res.status_code == 200
         body = res.json()
-        assert 0.0 <= body["riskScore"] <= 1.0
-        assert body["modelUsed"] == "svm"
+        assert 0.0 <= body["likelihood_score"] <= 1.0
 
         sessions = client.get("/sessions?limit=1", headers=headers).json()
         features = sessions[0]["features"]
@@ -150,3 +148,64 @@ def test_assistant_chat_without_api_key_falls_back(client, monkeypatch):
     )
     assert res.status_code == 200
     assert "GEMINI_API_KEY" in res.json()["reply"]
+
+
+def test_delete_attachment(client):
+    try:
+        # Upload attachment first
+        files = {"file": ("test_delete.txt", b"to be deleted", "text/plain")}
+        res = client.post("/attachments", files=files)
+        assert res.status_code == 200
+        att_id = res.json()["id"]
+
+        # Confirm file exists on disk
+        import glob
+        pattern = os.path.join(UPLOAD_DIR, f"doc_{att_id}.*")
+        assert len(glob.glob(pattern)) == 1
+
+        # Delete it
+        del_res = client.delete(f"/attachments/{att_id}")
+        assert del_res.status_code == 200
+        assert del_res.json()["status"] == "deleted"
+
+        # Confirm file is gone from disk
+        assert len(glob.glob(pattern)) == 0
+    finally:
+        _cleanup_uploads()
+
+
+def test_delete_session(client):
+    try:
+        # Create user
+        email = "deletetest@example.com"
+        signup = client.post("/auth/signup", json={"email": email, "password": "testpass123"})
+        headers = {"Authorization": f"Bearer {signup.json()['access_token']}"}
+
+        # Upload a voice clip
+        wav_bytes = _sine_wav_bytes()
+        files = {"audio": ("clip.wav", wav_bytes, "audio/wav")}
+        res = client.post("/screen/voice", files=files, headers=headers)
+        assert res.status_code == 200
+
+        # Retrieve session
+        sessions = client.get("/sessions?limit=1", headers=headers).json()
+        assert len(sessions) == 1
+        session_id = sessions[0]["session_id"]
+        voice_file_path = sessions[0]["voice_file_path"]
+
+        # Verify voice file exists
+        assert os.path.exists(voice_file_path)
+
+        # Delete session
+        del_res = client.delete(f"/sessions/{session_id}", headers=headers)
+        assert del_res.status_code == 200
+        assert del_res.json()["status"] == "deleted"
+
+        # Verify voice file is deleted from disk
+        assert not os.path.exists(voice_file_path)
+
+        # Verify session is gone from database
+        sessions_after = client.get("/sessions", headers=headers).json()
+        assert len(sessions_after) == 0
+    finally:
+        _cleanup_uploads()
