@@ -1,0 +1,6 @@
+backend/.venv
+frontend/node_modules
+parkinsons-detector
+venv
+**/*.pyc
+**/__pycache__
