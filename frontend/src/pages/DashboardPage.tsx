@@ -9,12 +9,12 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { Plus, Trash2, Pill, Check, ChevronDown, LogIn } from "lucide-react";
+import { Plus, Trash2, Pill, Check, ChevronDown, LogIn, Paperclip, FileSpreadsheet } from "lucide-react";
 import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { useDashboardStore, useAuthStore } from "../store/useAppStore";
 import Button from "../components/ui/Button";
-import { getScreeningSessions, type ScreeningSession, API_BASE_URL } from "../lib/api";
+import { getScreeningSessions, deleteScreeningSession, type ScreeningSession, API_BASE_URL } from "../lib/api";
 import "./DashboardPage.css";
 
 const SYMPTOM_FIELDS = [
@@ -51,6 +51,18 @@ export default function DashboardPage() {
       .then(setSessions)
       .catch(() => setSessionsError(true));
   }, [authStatus]);
+
+  const handleDeleteSession = async (sessionId: string) => {
+    try {
+      await deleteScreeningSession(sessionId);
+      setSessions((prev) => prev.filter((s) => s.session_id !== sessionId));
+      if (expandedSessionId === sessionId) {
+        setExpandedSessionId(null);
+      }
+    } catch (e) {
+      console.error("Failed to delete session", e);
+    }
+  };
 
   const chartData = [...symptomEntries]
     .sort((a, b) => a.date.localeCompare(b.date))
@@ -265,20 +277,33 @@ export default function DashboardPage() {
                   const expanded = expandedSessionId === s.session_id;
                   return (
                     <li key={s.session_id} className="dashboard-session">
-                      <button
-                        className="dashboard-session__summary"
-                        onClick={() => setExpandedSessionId(expanded ? null : s.session_id)}
-                        aria-expanded={expanded}
-                      >
-                        <span className="dashboard-session__date">
-                          {new Date(s.date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
-                        </span>
-                        <span className={`tag tag--${s.label === "low-likelihood" ? "success" : s.label === "moderate-likelihood" ? "warning" : "danger"}`}>
-                          {Math.round(s.risk_score * 100)}% · {s.label.replace("-", " ")}
-                        </span>
-                        <span className="dashboard-session__model">{s.model_used.replace("_", " ")}</span>
-                        <ChevronDown size={16} className={expanded ? "dashboard-session__chevron--open" : ""} />
-                      </button>
+                      <div className="dashboard-session__header" style={{ display: "flex", alignItems: "center" }}>
+                        <button
+                          className="dashboard-session__summary"
+                          onClick={() => setExpandedSessionId(expanded ? null : s.session_id)}
+                          aria-expanded={expanded}
+                          style={{ flex: 1 }}
+                        >
+                          <span className="dashboard-session__date">
+                            {new Date(s.date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                          </span>
+                          <span className={`tag tag--${s.label === "low-likelihood" ? "success" : s.label === "moderate-likelihood" ? "warning" : "danger"}`}>
+                            {Math.round(s.risk_score * 100)}% · {s.label.replace("-", " ")}
+                          </span>
+                          <span className="dashboard-session__model">{s.model_used.replace("_", " ")}</span>
+                          <ChevronDown size={16} className={expanded ? "dashboard-session__chevron--open" : ""} />
+                        </button>
+                        <button
+                          className="dashboard-session__delete"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteSession(s.session_id);
+                          }}
+                          aria-label="Delete session"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                       {expanded && (
                         <div className="dashboard-session__explanation">
                           <ReactMarkdown>{s.clinical_explanation}</ReactMarkdown>
@@ -291,8 +316,42 @@ export default function DashboardPage() {
                               </div>
                             )}
 
+                            {s.csv_url && (
+                              <div className="dashboard-session__csv" style={{ marginTop: "var(--sp-3)" }}>
+                                <p>Uploaded CSV features file:</p>
+                                <a
+                                  href={`${API_BASE_URL}${s.csv_url}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="dashboard-session__file-link"
+                                >
+                                  <FileSpreadsheet size={14} /> Download CSV
+                                </a>
+                              </div>
+                            )}
+
+                            {s.attachments && s.attachments.length > 0 && (
+                              <div className="dashboard-session__attachments" style={{ marginTop: "var(--sp-3)" }}>
+                                <p>Uploaded Attachments:</p>
+                                <ul className="dashboard-session__attachments-list" style={{ listStyle: "none", padding: 0, display: "flex", flexDirection: "column", gap: "var(--sp-2)", marginTop: "var(--sp-1)" }}>
+                                  {s.attachments.map((att: any) => (
+                                    <li key={att.id}>
+                                      <a
+                                        href={`${API_BASE_URL}${att.url}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="dashboard-session__file-link"
+                                      >
+                                        <Paperclip size={14} /> {att.filename}
+                                      </a>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
                             {s.features && Object.keys(s.features).length > 0 && (
-                              <div>
+                              <div style={{ marginTop: "var(--sp-4)" }}>
                                 <p className="dashboard-session__features-title">Acoustic Biomarkers / Uploaded Features:</p>
                                 <div className="dashboard-session__features-grid">
                                   {Object.entries(s.features).map(([name, val]) => (

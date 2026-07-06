@@ -4,7 +4,7 @@ import Button from "../ui/Button";
 import "./AudioRecorder.css";
 
 interface AudioRecorderProps {
-  onClipReady: (blob: Blob) => void;
+  onClipReady: (blob: Blob | null) => void;
 }
 
 export default function AudioRecorder({ onClipReady }: AudioRecorderProps) {
@@ -73,7 +73,8 @@ export default function AudioRecorder({ onClipReady }: AudioRecorderProps) {
     setAudioUrl(null);
     setSeconds(0);
     setPlaying(false);
-  }, []);
+    onClipReady(null);
+  }, [onClipReady]);
 
   const formatTime = (s: number) =>
     `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
@@ -117,7 +118,7 @@ export default function AudioRecorder({ onClipReady }: AudioRecorderProps) {
             ))}
           </div>
           <Button variant="ghost" size="sm" icon={<Trash2 size={15} />} onClick={discard}>
-            Discard
+            Delete audio
           </Button>
         </div>
       )}

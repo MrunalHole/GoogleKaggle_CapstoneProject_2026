@@ -1,4 +1,5 @@
 import os
+import glob
 import uuid
 import shutil
 import pandas as pd
@@ -83,6 +84,7 @@ def read_root():
 @app.post("/screen/voice", response_model=ScreeningResult)
 def screen_voice(
     audio: UploadFile = File(...),
+    attachments_json: Optional[str] = Form(None),
     db: Session = Depends(get_db),
     current_user: Optional[User] = Depends(get_current_user_optional)
 ):
@@ -117,6 +119,28 @@ def screen_voice(
             label=prediction_result["label"]
         )
 
+        # Parse attachments
+        import json
+        parsed_attachments = []
+        if attachments_json:
+            try:
+                raw_list = json.loads(attachments_json)
+                for item in raw_list:
+                    att_id = item.get("id")
+                    filename = item.get("filename")
+                    if att_id:
+                        file_pattern = os.path.join(UPLOAD_DIR, f"doc_{att_id}.*")
+                        matching_files = glob.glob(file_pattern)
+                        if matching_files:
+                            basename = os.path.basename(matching_files[0])
+                            parsed_attachments.append({
+                                "id": att_id,
+                                "filename": filename or basename,
+                                "url": f"/uploads/{basename}"
+                            })
+            except Exception as e:
+                print(f"Error parsing attachments JSON: {e}")
+
         # 5. Log the screening session to PostgreSQL
         create_session_record(
             db=db,
@@ -127,6 +151,8 @@ def screen_voice(
             features=features,
             clinical_explanation=explanation,
             voice_file_path=file_path,
+            csv_file_path=None,
+            attachments=parsed_attachments,
             user_id=current_user.id if current_user else None
         )
 
@@ -153,6 +179,7 @@ def screen_voice(
 @app.post("/screen/csv", response_model=ScreeningResult)
 def screen_csv(
     file: UploadFile = File(...),
+    attachments_json: Optional[str] = Form(None),
     db: Session = Depends(get_db),
     current_user: Optional[User] = Depends(get_current_user_optional)
 ):
@@ -164,8 +191,17 @@ def screen_csv(
     authenticated, anonymous otherwise), and returns the ScreeningResult.
     """
     try:
-        # 1. Read CSV file
+        # Save CSV file locally
+        file_extension = os.path.splitext(file.filename)[1] or ".csv"
+        unique_filename = f"csv_{uuid.uuid4().hex}{file_extension}"
+        csv_file_path = os.path.join(UPLOAD_DIR, unique_filename)
+        
+        # Read and write CSV file
         try:
+            file.file.seek(0)
+            with open(csv_file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+            file.file.seek(0)  # reset pointer for pandas
             df = pd.read_csv(file.file)
         except pd.errors.EmptyDataError:
             raise HTTPException(status_code=400, detail="Uploaded CSV file is empty.")
@@ -193,6 +229,28 @@ def screen_csv(
             label=prediction_result["label"]
         )
 
+        # Parse attachments
+        import json
+        parsed_attachments = []
+        if attachments_json:
+            try:
+                raw_list = json.loads(attachments_json)
+                for item in raw_list:
+                    att_id = item.get("id")
+                    filename = item.get("filename")
+                    if att_id:
+                        file_pattern = os.path.join(UPLOAD_DIR, f"doc_{att_id}.*")
+                        matching_files = glob.glob(file_pattern)
+                        if matching_files:
+                            basename = os.path.basename(matching_files[0])
+                            parsed_attachments.append({
+                                "id": att_id,
+                                "filename": filename or basename,
+                                "url": f"/uploads/{basename}"
+                            })
+            except Exception as e:
+                print(f"Error parsing attachments JSON: {e}")
+
         # 5. Log the screening session to PostgreSQL
         create_session_record(
             db=db,
@@ -203,6 +261,8 @@ def screen_csv(
             features=input_features,
             clinical_explanation=explanation,
             voice_file_path=None,
+            csv_file_path=csv_file_path,
+            attachments=parsed_attachments,
             user_id=current_user.id if current_user else None
         )
 
@@ -291,6 +351,81 @@ def upload_attachment(
         print(f"Error in /attachments: {e}")
         raise HTTPException(status_code=500, detail=f"Attachment upload failed: {str(e)}")
 
+@app.delete("/attachments/{attachment_id}")
+def delete_attachment(attachment_id: str):
+    """Deletes an uploaded attachment file from the filesystem."""
+    import re
+    if not re.match(r"^[a-zA-Z0-9\-]+$", attachment_id):
+        raise HTTPException(status_code=400, detail="Invalid attachment ID.")
+    
+    file_pattern = os.path.join(UPLOAD_DIR, f"doc_{attachment_id}.*")
+    matching_files = glob.glob(file_pattern)
+    if not matching_files:
+        raise HTTPException(status_code=404, detail="Attachment not found.")
+    
+    for f in matching_files:
+        try:
+            os.remove(f)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to delete file: {e}")
+    return {"status": "deleted", "attachment_id": attachment_id}
+
+@app.delete("/sessions/{session_id}")
+def delete_session(
+    session_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Deletes a screening session record.
+    Requires login and verifying ownership. Cascades deletion of all associated files."""
+    try:
+        from uuid import UUID
+        session_uuid = UUID(session_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid session ID format.")
+
+    from app.crud import get_session_record
+    record = get_session_record(db, session_uuid)
+    if not record:
+        raise HTTPException(status_code=404, detail="Session not found.")
+    
+    # Verify ownership
+    if record.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this session.")
+
+    # Delete corresponding voice file if it exists
+    if record.voice_file_path and os.path.exists(record.voice_file_path):
+        try:
+            os.remove(record.voice_file_path)
+        except Exception as file_err:
+            print(f"[WARNING] Could not delete voice file {record.voice_file_path}: {file_err}")
+
+    # Delete corresponding CSV file if it exists
+    if record.csv_file_path and os.path.exists(record.csv_file_path):
+        try:
+            os.remove(record.csv_file_path)
+        except Exception as file_err:
+            print(f"[WARNING] Could not delete CSV file {record.csv_file_path}: {file_err}")
+
+    # Delete corresponding attachments if they exist
+    if record.attachments:
+        for att in record.attachments:
+            att_id = att.get("id")
+            if att_id:
+                file_pattern = os.path.join(UPLOAD_DIR, f"doc_{att_id}.*")
+                matching_files = glob.glob(file_pattern)
+                for f in matching_files:
+                    try:
+                        os.remove(f)
+                    except Exception as file_err:
+                        print(f"[WARNING] Could not delete attachment file {f}: {file_err}")
+
+    # Delete database record
+    db.delete(record)
+    db.commit()
+
+    return {"status": "deleted", "session_id": session_id}
+
 @app.get("/sessions", response_model=List[SessionDetailResponse])
 def get_sessions(
     skip: int = 0,
@@ -311,6 +446,9 @@ def get_sessions(
             confidence=r.confidence,
             voice_file_path=r.voice_file_path,
             voice_url=f"/uploads/{os.path.basename(r.voice_file_path)}" if r.voice_file_path else None,
+            csv_file_path=r.csv_file_path,
+            csv_url=f"/uploads/{os.path.basename(r.csv_file_path)}" if r.csv_file_path else None,
+            attachments=r.attachments,
             features={k: float(v) for k, v in r.features.items()},
             clinical_explanation=r.clinical_explanation
         ) for r in records

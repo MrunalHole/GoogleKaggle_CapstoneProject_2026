@@ -78,6 +78,21 @@
   border-radius: var(--radius-sm);
 }
 
+.screening-attachment__delete {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--color-body);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+
+.screening-attachment__delete:hover {
+  color: var(--color-danger);
+}
+
 .screening-error {
   color: var(--color-danger);
   font-size: var(--fs-sm);
