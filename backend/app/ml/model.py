@@ -65,6 +65,13 @@ def load_and_train_models():
             df = df.drop(columns=['name'])
         
         X = df.drop(columns=['status'])
+        
+        # Drop features that Praat cannot extract live (nonlinear dynamics).
+        # This prevents the model from relying on static fallback values and ensures
+        # the predictions actually react to the user's vocal changes.
+        unsupported = ["RPDE", "DFA", "D2", "spread1", "spread2", "PPE"]
+        X = X.drop(columns=[c for c in unsupported if c in X.columns])
+        
         y = df['status']
         FEATURE_NAMES = list(X.columns)
 

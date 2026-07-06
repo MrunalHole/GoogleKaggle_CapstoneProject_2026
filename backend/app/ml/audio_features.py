@@ -16,14 +16,17 @@ F0_MIN_HZ = 75
 F0_MAX_HZ = 500
 
 
+import imageio_ffmpeg
+
 def _convert_to_wav(input_path: str) -> str:
-    """Uses ffmpeg to convert any browser/upload audio format to mono 16-bit WAV,
+    """Uses bundled ffmpeg to convert any browser/upload audio format to mono 16-bit WAV,
     since Praat cannot read webm and only unreliably reads some mp3 encodings."""
     fd, wav_path = tempfile.mkstemp(suffix=".wav")
     os.close(fd)
     try:
+        ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
         subprocess.run(
-            ["ffmpeg", "-y", "-i", input_path, "-ac", "1", "-ar", "44100", wav_path],
+            [ffmpeg_exe, "-y", "-i", input_path, "-ac", "1", "-ar", "44100", wav_path],
             check=True,
             capture_output=True,
         )

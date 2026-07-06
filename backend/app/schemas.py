@@ -8,12 +8,12 @@ class VoiceFeatureScore(BaseModel):
     importance: float
 
 class ScreeningResult(BaseModel):
-    riskScore: float = Field(..., description="0-1 probability-style score, NOT a diagnosis")
-    label: Literal["low-likelihood", "moderate-likelihood", "elevated-likelihood"]
-    modelUsed: Literal["random_forest", "svm", "ensemble"]
-    topFeatures: List[VoiceFeatureScore]
-    confidence: float
-    disclaimer: str
+    likelihood_score: float
+    percentage_chance: str
+    intensity_level: str
+    model_accuracy: str
+    feature_importances: Dict[str, float]
+    clinical_disclaimer: str
 
 class ChatMessage(BaseModel):
     role: Literal["user", "assistant"]

@@ -32,13 +32,12 @@ export interface VoiceFeatureScores {
 }
 
 export interface ScreeningResult {
-  /** 0–1 probability-style score, NOT a diagnosis */
-  riskScore: number;
-  label: "low-likelihood" | "moderate-likelihood" | "elevated-likelihood";
-  modelUsed: "random_forest" | "svm" | "ensemble";
-  topFeatures: VoiceFeatureScores[];
-  confidence: number;
-  disclaimer: string;
+  likelihood_score: number;
+  percentage_chance: string;
+  intensity_level: string;
+  model_accuracy: string;
+  feature_importances: Record<string, number>;
+  clinical_disclaimer: string;
 }
 
 export interface SymptomEntry {

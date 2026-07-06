@@ -11,7 +11,7 @@ class Settings(BaseSettings):
         extra="ignore"
     )
 
-    port: int = 5000
+    port: int = 8000
     host: str = "127.0.0.1"
     cors_origins: List[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
     database_url: str = "postgresql://postgres:password@localhost:5432/parkinsons"

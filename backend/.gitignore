@@ -6,6 +6,7 @@ __pycache__/
 *.db
 uploads/*
 !uploads/.gitkeep
+.env.example
 
 # Editor directories and files
 .vscode/*

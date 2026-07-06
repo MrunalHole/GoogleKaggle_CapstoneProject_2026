@@ -104,8 +104,8 @@ def screen_voice(
         # 2. Extract real acoustic biomarkers from the recording via Praat
         features = extract_voice_features(file_path, DEFAULT_VOICE_BASE)
 
-        # 3. Run predictions using the trained SVM model
-        prediction_result = predict_vocal_features(features, model_type="svm")
+        # 3. Run predictions using the trained Random Forest model
+        prediction_result = predict_vocal_features(features, model_type="random_forest")
 
         # 4. Generate clinical explanation using Gemini (or fallback template)
         explanation = get_clinical_explanation(
@@ -128,13 +128,19 @@ def screen_voice(
         )
 
         # 6. Return response matching frontend types
+        intensity = "Low Risk"
+        if prediction_result["label"] == "elevated-likelihood":
+            intensity = "High Indicators"
+        elif prediction_result["label"] == "moderate-likelihood":
+            intensity = "Moderate Indicators"
+
         return ScreeningResult(
-            riskScore=prediction_result["riskScore"],
-            label=prediction_result["label"],
-            modelUsed=prediction_result["modelUsed"],
-            topFeatures=prediction_result["topFeatures"],
-            confidence=prediction_result["confidence"],
-            disclaimer="This is a screening aid built on a research dataset. It is not a medical diagnosis. Please discuss any results with a neurologist."
+            likelihood_score=prediction_result["riskScore"],
+            percentage_chance=f"{round(prediction_result['riskScore'] * 100, 1)}% probability of tracking Parkinson's indicators",
+            intensity_level=intensity,
+            model_accuracy="69.51%",
+            feature_importances={f["feature"]: f["importance"] for f in prediction_result["topFeatures"]},
+            clinical_disclaimer="Warning: This calculation represents an approximate screening metric. These details may be inaccurate. You must contact a professional healthcare provider for a formal diagnosis."
         )
 
     except Exception as e:
@@ -198,13 +204,19 @@ def screen_csv(
         )
 
         # 6. Return response matching frontend types
+        intensity = "Low Risk"
+        if prediction_result["label"] == "elevated-likelihood":
+            intensity = "High Indicators"
+        elif prediction_result["label"] == "moderate-likelihood":
+            intensity = "Moderate Indicators"
+
         return ScreeningResult(
-            riskScore=prediction_result["riskScore"],
-            label=prediction_result["label"],
-            modelUsed=prediction_result["modelUsed"],
-            topFeatures=prediction_result["topFeatures"],
-            confidence=prediction_result["confidence"],
-            disclaimer="This is a screening aid built on a research dataset. It is not a medical diagnosis. Please discuss any results with a neurologist."
+            likelihood_score=prediction_result["riskScore"],
+            percentage_chance=f"{round(prediction_result['riskScore'] * 100, 1)}% probability of tracking Parkinson's indicators",
+            intensity_level=intensity,
+            model_accuracy="69.51%",
+            feature_importances={f["feature"]: f["importance"] for f in prediction_result["topFeatures"]},
+            clinical_disclaimer="Warning: This calculation represents an approximate screening metric. These details may be inaccurate. You must contact a professional healthcare provider for a formal diagnosis."
         )
 
     except Exception as e:

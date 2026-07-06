@@ -181,26 +181,21 @@ export default function ScreeningPage() {
 }
 
 function ResultCard({ result }: { result: ScreeningResult }) {
-  const pct = Math.round(result.riskScore * 100);
+  const pct = Math.round(result.likelihood_score * 100);
   const tagVariant =
-    result.label === "low-likelihood"
+    result.intensity_level.includes("Low")
       ? "success"
-      : result.label === "moderate-likelihood"
+      : result.intensity_level.includes("Moderate")
       ? "warning"
       : "danger";
-  const labelText =
-    result.label === "low-likelihood"
-      ? "Low likelihood signal"
-      : result.label === "moderate-likelihood"
-      ? "Moderate likelihood signal"
-      : "Elevated likelihood signal";
+  const labelText = result.intensity_level;
 
   return (
     <div className="card screening-result__card">
       <span className={`tag tag--${tagVariant}`}>{labelText}</span>
       <div className="screening-result__score">
         <span className="screening-result__score-num">{pct}%</span>
-        <span className="screening-result__score-label">model score</span>
+        <span className="screening-result__score-label">{result.percentage_chance}</span>
       </div>
       <div className="score-bar">
         <div
@@ -218,17 +213,17 @@ function ResultCard({ result }: { result: ScreeningResult }) {
       </div>
 
       <p className="screening-result__model">
-        Model used: <strong>{result.modelUsed.replace("_", " ")}</strong> · Confidence ~{Math.round(result.confidence * 100)}%
+        Model Accuracy: <strong>{result.model_accuracy}</strong>
       </p>
 
       <div className="screening-result__features">
         <p className="explore-panel__label">Top contributing voice features</p>
         <ul>
-          {result.topFeatures.map((f) => (
-            <li key={f.feature}>
-              <span>{f.feature}</span>
+          {Object.entries(result.feature_importances).map(([feature, importance]) => (
+            <li key={feature}>
+              <span>{feature}</span>
               <span className="screening-result__feature-bar">
-                <span style={{ width: `${Math.min(100, f.importance * 500)}%` }} />
+                <span style={{ width: `${Math.min(100, importance * 500)}%` }} />
               </span>
             </li>
           ))}
@@ -237,7 +232,7 @@ function ResultCard({ result }: { result: ScreeningResult }) {
 
       <div className="disclaimer">
         <AlertTriangle size={18} />
-        <p>{result.disclaimer}</p>
+        <p>{result.clinical_disclaimer}</p>
       </div>
     </div>
   );
