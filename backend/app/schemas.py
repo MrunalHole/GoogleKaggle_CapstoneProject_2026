@@ -38,6 +38,7 @@ class SessionDetailResponse(BaseModel):
     model_used: str
     confidence: float
     voice_file_path: Optional[str]
+    voice_url: Optional[str] = None
     features: Dict[str, float]
     clinical_explanation: str
 

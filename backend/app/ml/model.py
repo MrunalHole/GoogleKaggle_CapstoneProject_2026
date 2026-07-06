@@ -95,6 +95,24 @@ def load_and_train_models():
 # Attempt model training on import
 load_and_train_models()
 
+def simulate_voice_features(file_size: int) -> dict:
+    """Simulates realistic acoustic features based on a file size, adding
+    deterministic variation so that different recordings generate distinct results.
+    """
+    rng = random.Random(file_size)
+    simulated = {}
+    for key, base_val in DEFAULT_VOICE_BASE.items():
+        # Add a +/- 10% random variation to the base value
+        variation = rng.uniform(-0.1, 0.1)
+        simulated[key] = base_val * (1.0 + variation)
+    
+    # Ensure realistic limits for fundamental frequencies
+    simulated['MDVP:Fo(Hz)'] = max(50.0, min(400.0, simulated['MDVP:Fo(Hz)']))
+    simulated['MDVP:Fhi(Hz)'] = max(simulated['MDVP:Fo(Hz)'], simulated['MDVP:Fhi(Hz)'])
+    simulated['MDVP:Flo(Hz)'] = min(simulated['MDVP:Fo(Hz)'], simulated['MDVP:Flo(Hz)'])
+    
+    return simulated
+
 def predict_vocal_features(features_dict: dict, model_type: str = "svm") -> dict:
     """Takes a dictionary of features, runs prediction, and returns a dictionary of results."""
     global SVM_MODEL, RF_MODEL, SCALER, FEATURE_NAMES

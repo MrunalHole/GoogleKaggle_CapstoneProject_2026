@@ -59,6 +59,9 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 ALLOWED_ATTACHMENT_EXTENSIONS = {".pdf", ".jpg", ".jpeg", ".png", ".docx", ".txt", ".mp3"}
 MAX_ATTACHMENT_SIZE_BYTES = 10 * 1024 * 1024  # 10 MB
 
+from fastapi.staticfiles import StaticFiles
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
 @app.on_event("startup")
 def startup_event():
     """Event handler run when FastAPI starts. Trains/loads SVM & RF models."""
@@ -307,6 +310,7 @@ def get_sessions(
             model_used=r.model_used,
             confidence=r.confidence,
             voice_file_path=r.voice_file_path,
+            voice_url=f"/uploads/{os.path.basename(r.voice_file_path)}" if r.voice_file_path else None,
             features={k: float(v) for k, v in r.features.items()},
             clinical_explanation=r.clinical_explanation
         ) for r in records

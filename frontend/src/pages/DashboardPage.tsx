@@ -14,7 +14,7 @@ import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { useDashboardStore, useAuthStore } from "../store/useAppStore";
 import Button from "../components/ui/Button";
-import { getScreeningSessions, type ScreeningSession } from "../lib/api";
+import { getScreeningSessions, type ScreeningSession, API_BASE_URL } from "../lib/api";
 import "./DashboardPage.css";
 
 const SYMPTOM_FIELDS = [
@@ -282,6 +282,31 @@ export default function DashboardPage() {
                       {expanded && (
                         <div className="dashboard-session__explanation">
                           <ReactMarkdown>{s.clinical_explanation}</ReactMarkdown>
+                          
+                          <div className="dashboard-session__details">
+                            {s.voice_url && (
+                              <div className="dashboard-session__audio">
+                                <p>Recorded voice clip:</p>
+                                <audio controls src={`${API_BASE_URL}${s.voice_url}`} />
+                              </div>
+                            )}
+
+                            {s.features && Object.keys(s.features).length > 0 && (
+                              <div>
+                                <p className="dashboard-session__features-title">Acoustic Biomarkers / Uploaded Features:</p>
+                                <div className="dashboard-session__features-grid">
+                                  {Object.entries(s.features).map(([name, val]) => (
+                                    <div key={name} className="dashboard-session__feature-item">
+                                      <span className="dashboard-session__feature-name">{name}</span>
+                                      <span className="dashboard-session__feature-value">
+                                        {typeof val === "number" ? val.toFixed(5).replace(/\.?0+$/, "") : val}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       )}
                     </li>

@@ -38,6 +38,7 @@ interface DashboardState {
   addMedication: (med: Omit<MedicationReminder, "id" | "taken">) => void;
   removeMedication: (id: string) => void;
   toggleDose: (medId: string, doseKey: string) => void;
+  clearDashboard: () => void;
 }
 
 export const useDashboardStore = create<DashboardState>()(
@@ -75,10 +76,26 @@ export const useDashboardStore = create<DashboardState>()(
               : m
           ),
         })),
+      clearDashboard: () => set({ symptomEntries: [], medications: [] }),
     }),
-    { name: "lucent-dashboard" }
+    {
+      // Default key covers the anonymous / pre-login case.
+      // Immediately overwritten with a user-scoped key once the user is identified
+      // (see mountDashboardForUser below), ensuring each user's data is isolated.
+      name: "lucent-dashboard",
+    }
   )
 );
+
+/**
+ * Switches the dashboard store's persisted localStorage key to a user-scoped
+ * partition (e.g. "lucent-dashboard-abc123") so that symptom entries and
+ * medications are never shared between different logged-in users.
+ */
+function mountDashboardForUser(userId: string) {
+  useDashboardStore.persist.setOptions({ name: `lucent-dashboard-${userId}` });
+  useDashboardStore.persist.rehydrate();
+}
 
 interface AuthState {
   user: AuthUser | null;
@@ -110,6 +127,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
     setToken(token);
     try {
       const user = await getMe();
+      mountDashboardForUser(user.id);
       set({ user, status: "authenticated" });
     } catch (err) {
       if (isInvalidTokenError(err)) clearToken();
@@ -128,6 +146,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
     }
     try {
       const user = await getMe();
+      mountDashboardForUser(user.id);
       set({ user, status: "authenticated" });
     } catch (err) {
       if (isInvalidTokenError(err)) {
@@ -143,6 +162,11 @@ export const useAuthStore = create<AuthState>()((set) => ({
 
   logout: () => {
     clearToken();
+    // Reset the in-memory dashboard state so the next user (or the anonymous
+    // view) never sees the previous user's symptom entries or medications.
+    useDashboardStore.getState().clearDashboard();
+    // Revert the storage key back to the generic default.
+    useDashboardStore.persist.setOptions({ name: "lucent-dashboard" });
     set({ user: null, status: "anonymous" });
   },
 }));
