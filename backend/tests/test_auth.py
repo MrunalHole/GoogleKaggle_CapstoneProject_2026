@@ -1,5 +1,13 @@
 def test_signup_creates_user_and_returns_token(client):
-    res = client.post("/auth/signup", json={"email": "new@example.com", "password": "password123"})
+    res = client.post("/auth/signup", json={
+        "email": "new@example.com",
+        "password": "password123",
+        "relative_name": "John Doe",
+        "relative_relation": "Son",
+        "relative_contact": "relative@example.com",
+        "doctor_name": "Dr. Jenkins",
+        "doctor_contact": "jenkins@example.com"
+    })
     assert res.status_code == 200
     body = res.json()
     assert body["token_type"] == "bearer"
@@ -7,25 +15,59 @@ def test_signup_creates_user_and_returns_token(client):
 
 
 def test_signup_duplicate_email_rejected(client):
-    client.post("/auth/signup", json={"email": "dup@example.com", "password": "password123"})
-    res = client.post("/auth/signup", json={"email": "dup@example.com", "password": "differentpass"})
+    payload = {
+        "email": "dup@example.com",
+        "password": "password123",
+        "relative_name": "John Doe",
+        "relative_relation": "Son",
+        "relative_contact": "relative@example.com",
+        "doctor_name": "Dr. Jenkins",
+        "doctor_contact": "jenkins@example.com"
+    }
+    client.post("/auth/signup", json=payload)
+    payload["password"] = "differentpass"
+    res = client.post("/auth/signup", json=payload)
     assert res.status_code == 409
 
 
 def test_signup_password_too_short_rejected(client):
-    res = client.post("/auth/signup", json={"email": "short@example.com", "password": "abc123"})
+    res = client.post("/auth/signup", json={
+        "email": "short@example.com",
+        "password": "abc123",
+        "relative_name": "John Doe",
+        "relative_relation": "Son",
+        "relative_contact": "relative@example.com",
+        "doctor_name": "Dr. Jenkins",
+        "doctor_contact": "jenkins@example.com"
+    })
     assert res.status_code == 422
 
 
 def test_login_correct_password(client):
-    client.post("/auth/signup", json={"email": "login@example.com", "password": "correctpass123"})
+    client.post("/auth/signup", json={
+        "email": "login@example.com",
+        "password": "correctpass123",
+        "relative_name": "John Doe",
+        "relative_relation": "Son",
+        "relative_contact": "relative@example.com",
+        "doctor_name": "Dr. Jenkins",
+        "doctor_contact": "jenkins@example.com"
+    })
     res = client.post("/auth/login", json={"email": "login@example.com", "password": "correctpass123"})
     assert res.status_code == 200
     assert "access_token" in res.json()
 
 
 def test_login_incorrect_password_rejected(client):
-    client.post("/auth/signup", json={"email": "login2@example.com", "password": "correctpass123"})
+    client.post("/auth/signup", json={
+        "email": "login2@example.com",
+        "password": "correctpass123",
+        "relative_name": "John Doe",
+        "relative_relation": "Son",
+        "relative_contact": "relative@example.com",
+        "doctor_name": "Dr. Jenkins",
+        "doctor_contact": "jenkins@example.com"
+    })
     res = client.post("/auth/login", json={"email": "login2@example.com", "password": "wrongpassword"})
     assert res.status_code == 401
 
@@ -36,7 +78,15 @@ def test_login_unknown_email_rejected(client):
 
 
 def test_me_with_valid_token(client):
-    signup = client.post("/auth/signup", json={"email": "me@example.com", "password": "password123"})
+    signup = client.post("/auth/signup", json={
+        "email": "me@example.com",
+        "password": "password123",
+        "relative_name": "John Doe",
+        "relative_relation": "Son",
+        "relative_contact": "relative@example.com",
+        "doctor_name": "Dr. Jenkins",
+        "doctor_contact": "jenkins@example.com"
+    })
     token = signup.json()["access_token"]
     res = client.get("/auth/me", headers={"Authorization": f"Bearer {token}"})
     assert res.status_code == 200
@@ -61,9 +111,25 @@ def test_sessions_requires_auth(client):
 def test_sessions_scoped_to_own_user_only(client):
     csv_content = "MDVP:Fo(Hz),MDVP:Fhi(Hz),MDVP:Flo(Hz),PPE\n154.22,197.10,116.32,0.21\n"
 
-    signup_a = client.post("/auth/signup", json={"email": "usera@example.com", "password": "password123"})
+    signup_a = client.post("/auth/signup", json={
+        "email": "usera@example.com",
+        "password": "password123",
+        "relative_name": "John Doe",
+        "relative_relation": "Son",
+        "relative_contact": "relative@example.com",
+        "doctor_name": "Dr. Jenkins",
+        "doctor_contact": "jenkins@example.com"
+    })
     token_a = signup_a.json()["access_token"]
-    signup_b = client.post("/auth/signup", json={"email": "userb@example.com", "password": "password123"})
+    signup_b = client.post("/auth/signup", json={
+        "email": "userb@example.com",
+        "password": "password123",
+        "relative_name": "John Doe",
+        "relative_relation": "Son",
+        "relative_contact": "relative@example.com",
+        "doctor_name": "Dr. Jenkins",
+        "doctor_contact": "jenkins@example.com"
+    })
     token_b = signup_b.json()["access_token"]
 
     client.post("/screen/csv", files={"file": ("f.csv", csv_content, "text/csv")}, headers={"Authorization": f"Bearer {token_a}"})

@@ -151,6 +151,9 @@ export const useAuthStore = create<AuthState>()((set) => ({
     } catch (err) {
       if (isInvalidTokenError(err)) {
         clearToken();
+        useDashboardStore.persist.setOptions({ name: "lucent-dashboard" });
+        useDashboardStore.getState().clearDashboard();
+        useDashboardStore.persist.rehydrate();
         set({ user: null, status: "anonymous" });
       } else {
         // Leave the token in place -- this isn't evidence it's invalid,
@@ -162,11 +165,11 @@ export const useAuthStore = create<AuthState>()((set) => ({
 
   logout: () => {
     clearToken();
-    // Reset the in-memory dashboard state so the next user (or the anonymous
-    // view) never sees the previous user's symptom entries or medications.
-    useDashboardStore.getState().clearDashboard();
-    // Revert the storage key back to the generic default.
+    // Revert the storage key back to the generic default FIRST.
+    // This ensures any state clearing or rehydration applies to the anonymous partition.
     useDashboardStore.persist.setOptions({ name: "lucent-dashboard" });
+    useDashboardStore.getState().clearDashboard();
+    useDashboardStore.persist.rehydrate();
     set({ user: null, status: "anonymous" });
   },
 }));

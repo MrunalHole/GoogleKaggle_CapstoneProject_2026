@@ -17,8 +17,8 @@ try:
         pass
     print("[OK] Connected to PostgreSQL database successfully.")
 except Exception as e:
-    # On Vercel (or Serverless), the filesystem is read-only except for /tmp
-    sqlite_db_path = "/tmp/parkinsons.db"
+    # Use /tmp/parkinsons.db on serverless deployment environments like Vercel, but local file on developer machines.
+    sqlite_db_path = "/tmp/parkinsons.db" if os.environ.get("VERCEL") else "parkinsons.db"
     print(f"[WARNING] PostgreSQL connection failed ({e}). Falling back to local SQLite database at: {sqlite_db_path}")
     
     engine = create_engine(

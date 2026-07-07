@@ -12,7 +12,7 @@ from app.config import settings
 from app.database import engine, Base, get_db
 from app.migrations import run_migrations
 from app.crud import create_session_record, get_session_records
-from app.schemas import ScreeningResult, AttachmentResponse, SessionDetailResponse, AssistantChatRequest, AssistantChatResponse
+from app.schemas import ScreeningResult, AttachmentResponse, SessionDetailResponse, AssistantChatRequest, AssistantChatResponse, NotificationResponse, ShareReportRequest
 from app.ml.model import load_and_train_models, predict_vocal_features, DEFAULT_VOICE_BASE
 from app.ml.audio_features import extract_voice_features
 from app.agent.explainer import get_clinical_explanation
@@ -73,7 +73,95 @@ def startup_event():
     else:
         print("[WARNING] Failed to load models. Running in mock fallback mode.")
 
+def send_mock_email(to_email: str, subject: str, html_body: str):
+    print(f"\n==================================================")
+    print(f"[SMTP MOCK EMAIL SENT TO]: {to_email}")
+    print(f"[SUBJECT]: {subject}")
+    print(f"==================================================")
+    print(html_body)
+    print(f"==================================================\n")
+    try:
+        log_path = os.path.join(UPLOAD_DIR, "notifications_log.txt")
+        from datetime import datetime
+        with open(log_path, "a", encoding="utf-8") as f:
+            f.write(f"\n--- {datetime.utcnow().isoformat()} ---\n")
+            f.write(f"TO: {to_email}\n")
+            f.write(f"SUBJECT: {subject}\n")
+            f.write(f"BODY:\n{html_body}\n")
+    except Exception as e:
+        print(f"[WARNING] Could not write email log: {e}")
+
+def trigger_automatic_alerts(db: Session, user: User, risk_score: float, label: str, session_id: uuid.UUID):
+    # If the user does not have relative or doctor contact info configured (legacy account), skip alerts
+    if not user.relative_contact or not user.doctor_contact:
+        print(f"[INFO] Skipping auto-alerts for user {user.email} due to missing contact details.")
+        return
+
+    # Formatted doctor name to avoid double Dr. Dr. prefixes
+    doctor_name = user.doctor_name
+    if doctor_name and not doctor_name.lower().startswith("dr.") and not doctor_name.lower().startswith("dr "):
+        doctor_name = f"Dr. {doctor_name}"
+
+    # 1. Alert Relative
+    relative_subject = f"Alert: Parkinson's Health Assessment for {user.email}"
+    relative_body = f"""
+    <h3>Health Alert Notification</h3>
+    <p>Dear <b>{user.relative_name}</b>,</p>
+    <p>This is an automated notification from the Lucent Parkinson's Health Portal. Your <b>{user.relative_relation}</b> ({user.email}) has completed a vocal acoustic screening that showed elevated indicators of Parkinson's Disease.</p>
+    <ul>
+        <li><b>Likelihood Score:</b> {round(risk_score * 100, 1)}%</li>
+        <li><b>Indicators Category:</b> {label.replace('-', ' ').title()}</li>
+    </ul>
+    <p>We recommend contacting their doctor, <b>{doctor_name}</b>, to review these results. A full report is available in their patient dashboard.</p>
+    <br/>
+    <p>Best regards,<br/>Lucent Health Support Team</p>
+    """
+    
+    send_mock_email(user.relative_contact, relative_subject, relative_body)
+    
+    from app.crud import create_notification
+    create_notification(
+        db=db,
+        user_id=user.id,
+        session_id=session_id,
+        recipient_type="relative",
+        recipient_name=user.relative_name,
+        recipient_contact=user.relative_contact,
+        message=f"Auto-alert sent: Parkinson's likelihood score of {round(risk_score * 100, 1)}% crossed the threshold of 50%. Category: {label}.",
+        status="sent"
+    )
+
+    # 2. Alert Doctor
+    doctor_subject = f"Clinical Screening Alert: Patient {user.email}"
+    doctor_body = f"""
+    <h3>Clinical Screening Alert</h3>
+    <p>Dear <b>{doctor_name}</b>,</p>
+    <p>Your patient ({user.email}) has completed a vocal acoustic screening session on the Lucent Parkinson's Detector platform with a likelihood score that crossed the clinical alert threshold.</p>
+    <ul>
+        <li><b>Patient Email:</b> {user.email}</li>
+        <li><b>Parkinson's Likelihood Score:</b> {round(risk_score * 100, 1)}%</li>
+        <li><b>Indicator Status:</b> {label.replace('-', ' ').title()}</li>
+    </ul>
+    <p>The patient has been advised to schedule a consultation with you. You can view the patient's full voice screening history and report through their shared dashboard.</p>
+    <br/>
+    <p>Best regards,<br/>Lucent Health Portal Alerts</p>
+    """
+    
+    send_mock_email(user.doctor_contact, doctor_subject, doctor_body)
+    
+    create_notification(
+        db=db,
+        user_id=user.id,
+        session_id=session_id,
+        recipient_type="doctor",
+        recipient_name=user.doctor_name,
+        recipient_contact=user.doctor_contact,
+        message=f"Auto-alert sent: Parkinson's likelihood score of {round(risk_score * 100, 1)}% crossed the threshold of 50%. Category: {label}.",
+        status="sent"
+    )
+
 @app.get("/")
+
 def read_root():
     return {
         "status": "online",
@@ -142,7 +230,7 @@ def screen_voice(
                 print(f"Error parsing attachments JSON: {e}")
 
         # 5. Log the screening session to PostgreSQL
-        create_session_record(
+        session_record = create_session_record(
             db=db,
             risk_score=prediction_result["riskScore"],
             label=prediction_result["label"],
@@ -155,6 +243,16 @@ def screen_voice(
             attachments=parsed_attachments,
             user_id=current_user.id if current_user else None
         )
+
+        # Trigger auto-alerts if score is above threshold (50%)
+        if current_user and prediction_result["riskScore"] >= 0.5:
+            trigger_automatic_alerts(
+                db=db,
+                user=current_user,
+                risk_score=prediction_result["riskScore"],
+                label=prediction_result["label"],
+                session_id=session_record.session_id
+            )
 
         # 6. Return response matching frontend types
         intensity = "Low Risk"
@@ -252,7 +350,7 @@ def screen_csv(
                 print(f"Error parsing attachments JSON: {e}")
 
         # 5. Log the screening session to PostgreSQL
-        create_session_record(
+        session_record = create_session_record(
             db=db,
             risk_score=prediction_result["riskScore"],
             label=prediction_result["label"],
@@ -265,6 +363,16 @@ def screen_csv(
             attachments=parsed_attachments,
             user_id=current_user.id if current_user else None
         )
+
+        # Trigger auto-alerts if score is above threshold (50%)
+        if current_user and prediction_result["riskScore"] >= 0.5:
+            trigger_automatic_alerts(
+                db=db,
+                user=current_user,
+                risk_score=prediction_result["riskScore"],
+                label=prediction_result["label"],
+                session_id=session_record.session_id
+            )
 
         # 6. Return response matching frontend types
         intensity = "Low Risk"
@@ -451,6 +559,158 @@ def get_sessions(
             attachments=r.attachments,
             features={k: float(v) for k, v in r.features.items()},
             clinical_explanation=r.clinical_explanation
+        ) for r in records
+    ]
+
+@app.get("/sessions/{session_id}", response_model=SessionDetailResponse)
+def get_session_by_id(
+    session_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        from uuid import UUID
+        session_uuid = UUID(session_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid session ID format.")
+
+    from app.crud import get_session_record
+    record = get_session_record(db, session_uuid)
+    if not record:
+        raise HTTPException(status_code=404, detail="Session not found.")
+    
+    if record.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to view this session.")
+
+    return SessionDetailResponse(
+        session_id=record.session_id,
+        date=record.date,
+        risk_score=record.risk_score,
+        label=record.label,
+        model_used=record.model_used,
+        confidence=record.confidence,
+        voice_file_path=record.voice_file_path,
+        voice_url=f"/uploads/{os.path.basename(record.voice_file_path)}" if record.voice_file_path else None,
+        csv_file_path=record.csv_file_path,
+        csv_url=f"/uploads/{os.path.basename(record.csv_file_path)}" if record.csv_file_path else None,
+        attachments=record.attachments,
+        features={k: float(v) for k, v in record.features.items()},
+        clinical_explanation=record.clinical_explanation
+    )
+
+@app.post("/sessions/{session_id}/share")
+def share_session_report(
+    session_id: str,
+    request: ShareReportRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        from uuid import UUID
+        session_uuid = UUID(session_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid session ID format.")
+
+    from app.crud import get_session_record, create_notification
+    record = get_session_record(db, session_uuid)
+    if not record:
+        raise HTTPException(status_code=404, detail="Session not found.")
+    
+    if record.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to share this session.")
+
+    # Generate check-ins summary HTML
+    checkins_html = ""
+    if request.symptom_entries:
+        checkins_html += "<h3>Patient Daily Symptom Logs (Recent Check-ins)</h3>"
+        checkins_html += "<table border='1' cellpadding='5' style='border-collapse: collapse;'>"
+        checkins_html += "<tr><th>Date</th><th>Tremor (0-10)</th><th>Stiffness (0-10)</th><th>Balance (0-10)</th><th>Mood (0-10)</th><th>Sleep Quality (0-10)</th><th>Notes</th></tr>"
+        for entry in request.symptom_entries:
+            date_str = entry.get("date", "")
+            tremor = entry.get("tremor", "-")
+            stiffness = entry.get("stiffness", "-")
+            balance = entry.get("balance", "-")
+            mood = entry.get("mood", "-")
+            sleep = entry.get("sleepQuality", "-")
+            notes = entry.get("notes", "") or ""
+            checkins_html += f"<tr><td>{date_str}</td><td>{tremor}</td><td>{stiffness}</td><td>{balance}</td><td>{mood}</td><td>{sleep}</td><td>{notes}</td></tr>"
+        checkins_html += "</table>"
+    else:
+        checkins_html += "<p>No daily symptom check-ins recorded by the patient.</p>"
+
+    # Formatted doctor name to avoid double Dr. Dr. prefixes
+    doctor_name = current_user.doctor_name
+    if doctor_name and not doctor_name.lower().startswith("dr.") and not doctor_name.lower().startswith("dr "):
+        doctor_name = f"Dr. {doctor_name}"
+
+    # Generate full report HTML email
+    subject = f"Clinical Report: Parkinson's Assessment for {current_user.email}"
+    doctor_body = f"""
+    <h3>Lucent Clinical Assessment Report</h3>
+    <p>Dear <b>{doctor_name}</b>,</p>
+    <p>Your patient <b>{current_user.email}</b> has shared their complete clinical assessment report with you. Below are the details of the screening session along with their symptom trends log.</p>
+    
+    <h3>Screening Session Details</h3>
+    <ul>
+        <li><b>Assessment Date:</b> {record.date.isoformat()}</li>
+        <li><b>Parkinson's Likelihood Score:</b> {round(record.risk_score * 100, 1)}%</li>
+        <li><b>Indicators Category:</b> {record.label.replace('-', ' ').title()}</li>
+        <li><b>Model Used:</b> {record.model_used.replace('_', ' ').upper()}</li>
+        <li><b>Confidence Level:</b> {round(record.confidence * 100, 1)}%</li>
+    </ul>
+
+    <h3>Acoustic Biomarkers / Features Detected</h3>
+    <table border='1' cellpadding='5' style='border-collapse: collapse;'>
+        <tr><th>Feature Name</th><th>Value</th></tr>
+    """
+    for k, v in record.features.items():
+        doctor_body += f"<tr><td>{k}</td><td>{v:.5f}</td></tr>"
+    
+    doctor_body += f"""
+    </table>
+
+    <h3>Clinical Explanations</h3>
+    <p>{record.clinical_explanation.replace(chr(10), '<br/>')}</p>
+
+    {checkins_html}
+
+    <br/>
+    <p>This report was securely generated and shared automatically by the patient from their Lucent Health dashboard.</p>
+    <p>Best regards,<br/>Lucent Health Clinical Integrations</p>
+    """
+
+    send_mock_email(current_user.doctor_contact, subject, doctor_body)
+    
+    create_notification(
+        db=db,
+        user_id=current_user.id,
+        session_id=session_uuid,
+        recipient_type="doctor",
+        recipient_name=doctor_name,
+        recipient_contact=current_user.doctor_contact,
+        message=f"Patient shared report. Includes screening from {record.date.strftime('%Y-%m-%d')} (likelihood: {round(record.risk_score * 100, 1)}%) and {len(request.symptom_entries)} symptom log entries.",
+        status="sent"
+    )
+
+    return {"status": "success", "message": f"Report shared with {doctor_name} at {current_user.doctor_contact}"}
+
+@app.get("/notifications", response_model=List[NotificationResponse])
+def get_user_notifications(
+    limit: int = 50,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    from app.crud import get_notifications_by_user
+    records = get_notifications_by_user(db, user_id=current_user.id, limit=limit)
+    return [
+        NotificationResponse(
+            id=r.id,
+            recipient_type=r.recipient_type,
+            recipient_name=r.recipient_name,
+            recipient_contact=r.recipient_contact,
+            message=r.message,
+            sent_at=r.sent_at,
+            status=r.status
         ) for r in records
     ]
 

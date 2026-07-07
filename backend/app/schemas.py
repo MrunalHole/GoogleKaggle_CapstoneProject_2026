@@ -51,6 +51,12 @@ class SessionDetailResponse(BaseModel):
 class UserSignupRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8, description="Minimum 8 characters")
+    relative_name: str = Field(..., min_length=1, description="Relative's name")
+    relative_relation: str = Field(..., min_length=1, description="Relation (e.g. son, daughter)")
+    relative_contact: str = Field(..., min_length=1, description="Relative's contact email or phone")
+    doctor_name: str = Field(..., min_length=1, description="Doctor's name")
+    doctor_contact: str = Field(..., min_length=1, description="Doctor's contact email or phone")
+    user_location: Optional[str] = None
 
 class UserLoginRequest(BaseModel):
     email: EmailStr
@@ -60,9 +66,31 @@ class UserResponse(BaseModel):
     id: UUID
     email: str
     created_at: datetime
+    relative_name: Optional[str] = None
+    relative_relation: Optional[str] = None
+    relative_contact: Optional[str] = None
+    doctor_name: Optional[str] = None
+    doctor_contact: Optional[str] = None
+    user_location: Optional[str] = None
 
     class Config:
         from_attributes = True
+
+class NotificationResponse(BaseModel):
+    id: UUID
+    recipient_type: str
+    recipient_name: str
+    recipient_contact: str
+    message: str
+    sent_at: datetime
+    status: str
+
+    class Config:
+        from_attributes = True
+
+class ShareReportRequest(BaseModel):
+    symptom_entries: List[Dict]
+
 
 class TokenResponse(BaseModel):
     access_token: str

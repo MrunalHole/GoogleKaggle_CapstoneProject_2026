@@ -167,6 +167,22 @@ export interface AuthUser {
   id: string;
   email: string;
   created_at: string;
+  relative_name?: string;
+  relative_relation?: string;
+  relative_contact?: string;
+  doctor_name?: string;
+  doctor_contact?: string;
+  user_location?: string;
+}
+
+export interface NotificationRecord {
+  id: string;
+  recipient_type: string;
+  recipient_name: string;
+  recipient_contact: string;
+  message: string;
+  sent_at: string;
+  status: string;
 }
 
 /**
@@ -190,11 +206,29 @@ async function parseAuthError(res: Response, fallback: string): Promise<never> {
   throw new Error(body?.detail ?? fallback);
 }
 
-export async function signup(email: string, password: string): Promise<string> {
+export async function signup(
+  email: string,
+  password: string,
+  relative_name: string,
+  relative_relation: string,
+  relative_contact: string,
+  doctor_name: string,
+  doctor_contact: string,
+  user_location?: string
+): Promise<string> {
   const res = await apiFetch(`${API_BASE_URL}/auth/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({
+      email,
+      password,
+      relative_name,
+      relative_relation,
+      relative_contact,
+      doctor_name,
+      doctor_contact,
+      user_location,
+    }),
   });
   if (!res.ok) return parseAuthError(res, "Signup failed.");
   const data = await res.json();
@@ -219,6 +253,42 @@ export async function getMe(): Promise<AuthUser> {
   if (!res.ok) throw new AuthError(res.status, `Not authenticated (${res.status})`);
   return res.json();
 }
+
+export async function getNotifications(): Promise<NotificationRecord[]> {
+  const res = await apiFetch(`${API_BASE_URL}/notifications`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error(`Fetching notification logs failed (${res.status})`);
+  return res.json();
+}
+
+export async function getScreeningSession(sessionId: string): Promise<ScreeningSession> {
+  const res = await apiFetch(`${API_BASE_URL}/sessions/${sessionId}`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error(`Fetching session details failed (${res.status})`);
+  return res.json();
+}
+
+export async function shareReportWithDoctor(
+  sessionId: string,
+  symptomEntries: any[]
+): Promise<any> {
+  const res = await apiFetch(`${API_BASE_URL}/sessions/${sessionId}/share`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders(),
+    },
+    body: JSON.stringify({ symptom_entries: symptomEntries }),
+  });
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => null);
+    throw new Error(errorBody?.detail ?? `Sharing report failed (${res.status})`);
+  }
+  return res.json();
+}
+
 
 export interface ChatMessage {
   role: "user" | "assistant";

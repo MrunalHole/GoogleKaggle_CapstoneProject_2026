@@ -10,6 +10,18 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=False, index=True)
     hashed_password = Column(String(255), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    
+    # Emergency contact (relative) details
+    relative_name = Column(String(255), nullable=True)
+    relative_relation = Column(String(255), nullable=True)
+    relative_contact = Column(String(255), nullable=True)
+    
+    # Doctor details
+    doctor_name = Column(String(255), nullable=True)
+    doctor_contact = Column(String(255), nullable=True)
+    
+    # Patient location details
+    user_location = Column(String(255), nullable=True)
 
 class SessionRecord(Base):
     __tablename__ = "sessions"
@@ -29,3 +41,17 @@ class SessionRecord(Base):
     # Using JSONB for PostgreSQL performance and indexing, falling back to standard JSON on SQLite (for tests)
     features = Column(JSON, nullable=False)
     clinical_explanation = Column(Text, nullable=False)
+
+class Notification(Base):
+    __tablename__ = "notifications"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    session_id = Column(UUID(as_uuid=True), ForeignKey("sessions.session_id"), nullable=True)
+    recipient_type = Column(String(50), nullable=False)  # "relative" or "doctor"
+    recipient_name = Column(String(255), nullable=False)
+    recipient_contact = Column(String(255), nullable=False)
+    message = Column(Text, nullable=False)
+    sent_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    status = Column(String(50), nullable=False)  # "sent", "failed"
+
