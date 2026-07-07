@@ -1,65 +1,78 @@
 # Lucent — Parkinson's Disease Screening & Education Platform
 
-A capstone project (Google/Kaggle) exploring what a voice-based Parkinson's
-screening tool could look like: a React frontend for education and
-screening, a FastAPI backend serving ML predictions and Gemini-generated
-clinical explanations, and a standalone Google ADK agent.
+## Problem
+Parkinson’s Disease (PD) is a progressive nervous system disorder that affects movement. Early diagnosis is often challenging due to the subtle onset of symptoms. While voice changes, such as hypophonia (soft speech) and monotone voice, can be early indicators of PD, accessible and non-invasive screening tools are not widely available for the general public, often delaying early intervention.
 
-## Structure
+## Solution
+Lucent is a comprehensive educational and screening platform designed to raise awareness and provide an accessible, non-diagnostic screening tool for Parkinson's Disease. It leverages machine learning to analyze vocal acoustic biomarkers from brief voice recordings, providing users with a likelihood score and feature importances. The platform also features an interactive 3D brain explorer, a disease stage simulator, and an AI-powered clinical assistant to help users better understand the disease. 
 
+## Architecture
+The platform is composed of three main components:
+
+1. **Frontend (`/frontend`)**: A React + TypeScript + Vite application. It provides an intuitive UI for voice screening, a personal dashboard for symptom tracking, and an interactive 3D brain explorer built with React Three Fiber.
+2. **Backend (`/backend`)**: A FastAPI + PostgreSQL backend. It handles machine learning inference (SVM/Random Forest) on the UCI Parkinson's dataset, extracts real acoustic biomarkers using Praat, and leverages Google Gemini AI (`gemini-2.5-flash`) to generate structured, plain-English clinical explanations.
+3. **Agent (`/parkinsons-detector`)**: A standalone Google ADK ReAct agent. It orchestrates dynamic ML models, runs physiological data guardrails, and maintains patient session history, demonstrating how the screening logic can be deployed as an autonomous agent.
+
+### High-Level Architecture Diagram
+```mermaid
+graph TD
+    A[Frontend: React + Vite] -->|Voice/CSV Upload| B(Backend: FastAPI)
+    A -->|Chat Queries| B
+    B -->|Acoustic Analysis| C[Praat + ffmpeg]
+    B -->|ML Inference| D[SVM / Random Forest]
+    B -->|Clinical Explanations| E[Google Gemini AI]
+    B -->|Data Persistence| F[(PostgreSQL)]
+    G[ADK Agent] -->|Standalone Screening| D
 ```
-frontend/             React + TypeScript + Vite. 3D brain explorer, disease
-                       stage simulator, voice screening UI, personal
-                       dashboard, and an AI assistant ("Ask Lucent").
-backend/               FastAPI + PostgreSQL (falls back to SQLite locally).
-                       Trains SVM/Random Forest models on the UCI Parkinson's
-                       dataset, extracts real acoustic biomarkers from voice
-                       recordings via Praat, and proxies clinical/chat
-                       explanations through Gemini.
-parkinsons-detector/   A separate Google ADK ReAct agent that performs the
-                       same screening as a standalone deployable agent.
-```
 
-Each subproject has its own README with setup instructions:
-[frontend/README.md](frontend/README.md) · [backend/README.md](backend/README.md) · [parkinsons-detector/README.md](parkinsons-detector/README.md)
+## Instructions for Setup
 
-## Quick start (frontend + backend)
+### Prerequisites
+- Node.js & npm
+- Python 3 & `uv` (or pip)
+- Docker (for PostgreSQL)
+- `ffmpeg` (for audio conversion)
+  - macOS: `brew install ffmpeg`
+  - Linux: `sudo apt-get install ffmpeg`
 
+### 1. Backend Setup
 ```bash
-# Backend
 cd backend
-python -m venv .venv && source .venv/bin/activate
-pip install -e .
-cp .env.example .env   # add GEMINI_API_KEY if you have one
-uvicorn app.main:app --host 127.0.0.1 --port 5000 --reload
+# Start PostgreSQL via Docker
+docker compose up -d
 
-# Frontend (separate terminal)
+# Install dependencies
+uv venv
+source .venv/bin/activate  # Or .venv\Scripts\activate on Windows
+uv pip install -e .
+
+# Configure environment
+cp .env.example .env
+# Edit .env to add your GEMINI_API_KEY
+
+# Run the server
+uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+### 2. Frontend Setup
+```bash
 cd frontend
 npm install
 npm run dev
 ```
+Visit `http://localhost:5173`. The frontend is pre-configured to point to the local backend at `http://127.0.0.1:8000`.
 
-Visit `http://localhost:5173`. The frontend's `.env` is committed with
-`VITE_API_BASE_URL=http://127.0.0.1:5000` already set, so this works with
-zero setup as long as the backend is running on the default port above.
-Only edit `frontend/.env` for a non-default setup (a different port, or a
-deployed backend) -- see [frontend/README.md](frontend/README.md).
+### 3. Agent Setup (Optional)
+To test the standalone ADK agent:
+```bash
+cd parkinsons-detector
+uvx google-agents-cli setup
+agents-cli install
+agents-cli playground
+```
 
-## Known limitations
+## Known Limitations
+The underlying model is trained on the UCI Parkinson's voice dataset—195 recordings from just 32 subjects. The dataset has class imbalance and cross-validation is not grouped by subject. As such, the reported accuracy may be optimistic. **This is not a diagnostic tool.** The platform explicitly discloses this limitation to users on the About page.
 
-The underlying model is trained on the UCI Parkinson's voice dataset — 195
-recordings from just 32 subjects (23 with Parkinson's, 8 healthy), with
-147 PD recordings vs. 48 healthy (class imbalance), and cross-validation
-that isn't grouped by subject. Reported accuracy is likely optimistic, and
-this is **not a diagnostic tool**. The in-app **About** page states this
-directly to end users; see [frontend/src/pages/AboutPage.tsx](frontend/src/pages/AboutPage.tsx)
-for the full disclosure.
-
-Of the 22 acoustic biomarkers the model uses, `/screen/voice` extracts 16
-directly from the uploaded recording via Praat (fundamental frequency,
-jitter, shimmer, HNR). The remaining 6 — RPDE, DFA, D2, spread1, spread2,
-and PPE — are nonlinear-dynamics measures from the original research
-pipeline with no standard library implementation; they fall back to the
-training dataset's baseline values rather than being computed or fabricated
-per recording. `/screen/csv` is unaffected — direct feature CSV uploads
-run through the real trained model end-to-end.
+---
+*Note: Detailed documentation for each component can be found in their respective directories: [Frontend](frontend/README.md), [Backend](backend/README.md), and [Agent](parkinsons-detector/README.md).*

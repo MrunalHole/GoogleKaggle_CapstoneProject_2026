@@ -28,7 +28,7 @@ Three Fiber), and Vite.
 
 **There is no demo/mock mode** — every API call in `src/lib/api.ts` goes to
 `${VITE_API_BASE_URL}/...`. `.env` is committed with
-`VITE_API_BASE_URL=http://127.0.0.1:5000` already set, so a fresh clone
+`VITE_API_BASE_URL=http://127.0.0.1:8000` already set, so a fresh clone
 works with zero setup as long as the backend (`../backend`) is running on
 that default port.
 
