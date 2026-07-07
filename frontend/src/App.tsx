@@ -14,9 +14,12 @@ const AssistantPage = lazy(() => import("./pages/AssistantPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const SignupPage = lazy(() => import("./pages/SignupPage"));
+const ReportPage = lazy(() => import("./pages/ReportPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
+
 function PageFallback() {
+
   return (
     <div className="container" style={{ padding: "var(--sp-9) 0", textAlign: "center", color: "var(--color-body)" }}>
       Loading…
@@ -58,6 +61,7 @@ export default function App() {
             <Route path="/about" element={<AboutPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
+            <Route path="/report/:sessionId" element={<ReportPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Suspense>

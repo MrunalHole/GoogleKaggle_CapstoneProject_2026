@@ -58,7 +58,15 @@ def test_screen_csv_empty_rejected(client):
 
 def test_screen_voice_extracts_real_features(client):
     try:
-        signup = client.post("/auth/signup", json={"email": "voicetest@example.com", "password": "testpass123"})
+        signup = client.post("/auth/signup", json={
+            "email": "voicetest@example.com",
+            "password": "testpass123",
+            "relative_name": "John Doe",
+            "relative_relation": "Son",
+            "relative_contact": "relative@example.com",
+            "doctor_name": "Dr. Jenkins",
+            "doctor_contact": "jenkins@example.com"
+        })
         headers = {"Authorization": f"Bearer {signup.json()['access_token']}"}
 
         wav_bytes = _sine_wav_bytes()
@@ -178,7 +186,15 @@ def test_delete_session(client):
     try:
         # Create user
         email = "deletetest@example.com"
-        signup = client.post("/auth/signup", json={"email": email, "password": "testpass123"})
+        signup = client.post("/auth/signup", json={
+            "email": email,
+            "password": "testpass123",
+            "relative_name": "John Doe",
+            "relative_relation": "Son",
+            "relative_contact": "relative@example.com",
+            "doctor_name": "Dr. Jenkins",
+            "doctor_contact": "jenkins@example.com"
+        })
         headers = {"Authorization": f"Bearer {signup.json()['access_token']}"}
 
         # Upload a voice clip
@@ -209,3 +225,65 @@ def test_delete_session(client):
         assert len(sessions_after) == 0
     finally:
         _cleanup_uploads()
+
+
+def test_notifications_and_sharing(client):
+    try:
+        # 1. Signup user with relative & doctor details
+        signup_payload = {
+            "email": "notif_test@example.com",
+            "password": "testpass123",
+            "relative_name": "Jane Relative",
+            "relative_relation": "Daughter",
+            "relative_contact": "jane.relative@example.com",
+            "doctor_name": "Dr. Sarah Jenkins",
+            "doctor_contact": "sarah.jenkins@nyclinic.com",
+            "user_location": "New York"
+        }
+        signup = client.post("/auth/signup", json=signup_payload)
+        assert signup.status_code == 200
+        headers = {"Authorization": f"Bearer {signup.json()['access_token']}"}
+
+        # 2. Run a voice screening
+        wav_bytes = _sine_wav_bytes()
+        files = {"audio": ("clip.wav", wav_bytes, "audio/wav")}
+        res = client.post("/screen/voice", files=files, headers=headers)
+        assert res.status_code == 200
+        
+        # 3. Retrieve notifications list
+        notifs_res = client.get("/notifications", headers=headers)
+        assert notifs_res.status_code == 200
+        
+        # 4. Manually share report with doctor
+        sessions = client.get("/sessions", headers=headers).json()
+        assert len(sessions) > 0
+        session_id = sessions[0]["session_id"]
+        
+        share_payload = {
+            "symptom_entries": [
+                {"date": "2026-07-06", "tremor": 3, "stiffness": 4, "balance": 2, "mood": 5, "sleepQuality": 6, "notes": "Felt ok"}
+            ]
+        }
+        share_res = client.post(f"/sessions/{session_id}/share", json=share_payload, headers=headers)
+        assert share_res.status_code == 200
+        assert "shared with Dr. Sarah Jenkins" in share_res.json()["message"]
+
+        # 5. Fetch notifications again and confirm it has a doctor share log
+        notifs_after_res = client.get("/notifications", headers=headers)
+        assert notifs_after_res.status_code == 200
+        notifs_after = notifs_after_res.json()
+        assert len(notifs_after) > 0
+        
+        doctor_notifs = [n for n in notifs_after if n["recipient_type"] == "doctor"]
+        assert len(doctor_notifs) > 0
+        assert doctor_notifs[0]["recipient_name"] == "Dr. Sarah Jenkins"
+        assert "Patient shared report" in doctor_notifs[0]["message"]
+        
+        # 6. Retrieve single session by id
+        single_sess_res = client.get(f"/sessions/{session_id}", headers=headers)
+        assert single_sess_res.status_code == 200
+        assert single_sess_res.json()["session_id"] == session_id
+
+    finally:
+        _cleanup_uploads()
+

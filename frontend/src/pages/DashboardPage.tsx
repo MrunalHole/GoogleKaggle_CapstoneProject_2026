@@ -9,13 +9,14 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { Plus, Trash2, Pill, Check, ChevronDown, LogIn, Paperclip, FileSpreadsheet } from "lucide-react";
+import { Plus, Trash2, Pill, Check, ChevronDown, LogIn, Paperclip, FileSpreadsheet, Send, FileText, Bell } from "lucide-react";
 import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { useDashboardStore, useAuthStore } from "../store/useAppStore";
 import Button from "../components/ui/Button";
-import { getScreeningSessions, deleteScreeningSession, type ScreeningSession, API_BASE_URL } from "../lib/api";
+import { getScreeningSessions, deleteScreeningSession, type ScreeningSession, API_BASE_URL, getNotifications, shareReportWithDoctor } from "../lib/api";
 import "./DashboardPage.css";
+
 
 const SYMPTOM_FIELDS = [
   { key: "tremor", label: "Tremor" },
@@ -45,12 +46,38 @@ export default function DashboardPage() {
   const [sessionsError, setSessionsError] = useState(false);
   const [expandedSessionId, setExpandedSessionId] = useState<string | null>(null);
 
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [sharingSessionId, setSharingSessionId] = useState<string | null>(null);
+  const [shareSuccess, setShareSuccess] = useState<string | null>(null);
+  const [shareError, setShareError] = useState<string | null>(null);
+
   useEffect(() => {
     if (authStatus !== "authenticated") return;
     getScreeningSessions()
       .then(setSessions)
       .catch(() => setSessionsError(true));
+
+    getNotifications()
+      .then(setNotifications)
+      .catch((err) => console.error("Failed to load notifications", err));
   }, [authStatus]);
+
+  const handleShareReport = async (sessionId: string) => {
+    setSharingSessionId(sessionId);
+    setShareSuccess(null);
+    setShareError(null);
+    try {
+      await shareReportWithDoctor(sessionId, symptomEntries);
+      setShareSuccess(`Report shared with Dr. ${useAuthStore.getState().user?.doctor_name}!`);
+      const updatedNotifs = await getNotifications();
+      setNotifications(updatedNotifs);
+    } catch (e: any) {
+      setShareError(e.message || "Failed to share report.");
+    } finally {
+      setSharingSessionId(null);
+    }
+  };
+
 
   const handleDeleteSession = async (sessionId: string) => {
     try {
@@ -81,14 +108,23 @@ export default function DashboardPage() {
   return (
     <div className="dashboard">
       <div className="container">
-        <div className="page-head">
-          <span className="eyebrow">My dashboard</span>
-          <h1>Track symptoms and medication over time</h1>
-          <p>
-            Everything here is stored only in your browser — log a quick
-            daily check-in and set up medication reminders to build a
-            picture you can bring to your next appointment.
-          </p>
+        <div className="page-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "var(--sp-4)" }}>
+          <div style={{ flex: 1, minWidth: "300px" }}>
+            <span className="eyebrow">My dashboard</span>
+            <h1 style={{ margin: 0 }}>Track symptoms and medication over time</h1>
+            <p style={{ marginTop: "var(--sp-4)", marginBottom: 0 }}>
+              Everything here is stored only in your browser — log a quick
+              daily check-in and set up medication reminders to build a
+              picture you can bring to your next appointment.
+            </p>
+          </div>
+          {authStatus === "authenticated" && sessions.length > 0 && (
+            <Link to="/report/summary" target="_blank" rel="noopener noreferrer" style={{ marginTop: "var(--sp-5)" }}>
+              <Button variant="primary" icon={<FileText size={16} />}>
+                Download Summary Report
+              </Button>
+            </Link>
+          )}
         </div>
 
         <div className="dashboard-grid">
@@ -241,6 +277,48 @@ export default function DashboardPage() {
             )}
           </div>
 
+          {/* ---------- Clinical Alerts & Notification History ---------- */}
+          {authStatus === "authenticated" && (
+            <div className="card dashboard-card dashboard-card--wide">
+              <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)", marginBottom: "var(--sp-2)" }}>
+                <Bell size={20} style={{ color: "var(--color-primary)" }} />
+                <h2>Clinical Alerts & Notification History</h2>
+              </div>
+              <p className="dashboard-empty" style={{ fontSize: "var(--fs-sm)", marginBottom: "var(--sp-3)", textAlign: "left" }}>
+                Automatic alerts sent to your relative and doctor, as well as manually shared reports, are audited below.
+              </p>
+              {notifications.length === 0 ? (
+                <p className="dashboard-empty">No alerts or report shares logged yet. Elevated screening scores trigger automatic notifications.</p>
+              ) : (
+                <div style={{ maxHeight: "250px", overflowY: "auto", border: "1px solid var(--color-border)", borderRadius: "var(--radius-md)", background: "#fbf9f6" }}>
+                  <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                    {notifications.map((n) => (
+                      <li key={n.id} style={{ display: "flex", gap: "var(--sp-3)", padding: "var(--sp-3)", borderBottom: "1px solid var(--color-border)" }}>
+                        <div style={{ padding: "6px", background: "#fff", borderRadius: "50%", border: "1px solid var(--color-border)", display: "flex", alignItems: "center", justifyContent: "center", height: "fit-content" }}>
+                          <Send size={14} style={{ color: "var(--color-primary)" }} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "4px", alignItems: "center" }}>
+                            <strong style={{ fontSize: "var(--fs-sm)", color: "var(--color-heading)" }}>
+                              To {n.recipient_type === "relative" ? `Relative (${n.recipient_name})` : `Doctor (${n.recipient_name})`} · {n.recipient_contact}
+                            </strong>
+                            <span style={{ fontSize: "11px", color: "var(--color-body)" }}>
+                              {new Date(n.sent_at).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                            </span>
+                          </div>
+                          <p style={{ margin: "4px 0 0 0", fontSize: "var(--fs-xs)", color: "var(--color-body)", lineHeight: "1.4", textAlign: "left" }}>
+                            {n.message}
+                          </p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+
           {/* ---------- Screening session history ---------- */}
           <div className="card dashboard-card dashboard-card--wide">
             <h2>Screening session history</h2>
@@ -307,6 +385,34 @@ export default function DashboardPage() {
                       {expanded && (
                         <div className="dashboard-session__explanation">
                           <ReactMarkdown>{s.clinical_explanation}</ReactMarkdown>
+
+                          {/* Report & Share Actions */}
+                          <div style={{ display: "flex", gap: "var(--sp-3)", margin: "var(--sp-4) 0", flexWrap: "wrap", borderTop: "1px solid var(--color-border)", paddingTop: "var(--sp-3)" }}>
+                            <Link to={`/report/${s.session_id}`} target="_blank" rel="noopener noreferrer">
+                              <Button variant="secondary" size="sm" icon={<FileText size={14} />}>
+                                Download Clinical Report
+                              </Button>
+                            </Link>
+                            <Button 
+                              variant="primary" 
+                              size="sm" 
+                              icon={<Send size={14} />}
+                              disabled={sharingSessionId === s.session_id}
+                              onClick={() => handleShareReport(s.session_id)}
+                            >
+                              {sharingSessionId === s.session_id ? "Sharing..." : "Share Report with Doctor"}
+                            </Button>
+                            {shareSuccess && expandedSessionId === s.session_id && (
+                              <span style={{ fontSize: "var(--fs-xs)", color: "var(--color-success)", alignSelf: "center", fontWeight: 500 }}>
+                                ✓ {shareSuccess}
+                              </span>
+                            )}
+                            {shareError && expandedSessionId === s.session_id && (
+                              <span style={{ fontSize: "var(--fs-xs)", color: "var(--color-danger)", alignSelf: "center", fontWeight: 500 }}>
+                                ⚠ {shareError}
+                              </span>
+                            )}
+                          </div>
                           
                           <div className="dashboard-session__details">
                             {s.voice_url && (

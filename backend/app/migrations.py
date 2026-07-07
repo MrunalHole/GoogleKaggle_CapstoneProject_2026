@@ -34,3 +34,21 @@ def run_migrations(engine):
             else:
                 conn.execute(text("ALTER TABLE sessions ADD COLUMN attachments TEXT"))
         print("[OK] Migrated sessions table: added nullable attachments column.")
+
+    # Migrate users table columns
+    if "users" in inspector.get_table_names():
+        user_cols = {c["name"] for c in inspector.get_columns("users")}
+        columns_to_add = [
+            ("relative_name", "VARCHAR(255)"),
+            ("relative_relation", "VARCHAR(255)"),
+            ("relative_contact", "VARCHAR(255)"),
+            ("doctor_name", "VARCHAR(255)"),
+            ("doctor_contact", "VARCHAR(255)"),
+            ("user_location", "VARCHAR(255)"),
+        ]
+        for col_name, col_type in columns_to_add:
+            if col_name not in user_cols:
+                with engine.begin() as conn:
+                    conn.execute(text(f"ALTER TABLE users ADD COLUMN {col_name} {col_type}"))
+                print(f"[OK] Migrated users table: added nullable {col_name} column.")
+

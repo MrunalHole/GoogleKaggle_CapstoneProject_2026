@@ -15,9 +15,20 @@ def signup(request: UserSignupRequest, db: Session = Depends(get_db)):
     if get_user_by_email(db, request.email):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="An account with this email already exists.")
 
-    user = create_user(db, email=request.email, hashed_password=hash_password(request.password))
+    user = create_user(
+        db,
+        email=request.email,
+        hashed_password=hash_password(request.password),
+        relative_name=request.relative_name,
+        relative_relation=request.relative_relation,
+        relative_contact=request.relative_contact,
+        doctor_name=request.doctor_name,
+        doctor_contact=request.doctor_contact,
+        user_location=request.user_location
+    )
     token = create_access_token(user.id)
     return TokenResponse(access_token=token)
+
 
 
 @router.post("/login", response_model=TokenResponse)
